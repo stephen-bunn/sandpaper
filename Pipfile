@@ -1,0 +1,27 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+pyexcel = "*"
+"path.py" = "*"
+braceexpand = "*"
+six = "*"
+regex = "*"
+pyexcel-xls = "*"
+futures = "*"
+psutil = "*"
+dateparser = "*"
+simplejson = "*"
+
+
+[dev-packages]
+
+"flake8" = "*"
+ptpython = "*"
+cprofilev = "*"
+sphinx = "*"
