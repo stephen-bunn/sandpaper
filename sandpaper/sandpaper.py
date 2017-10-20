@@ -251,6 +251,7 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
+        :param dict kwargs: Any named arguments
         :returns: The value with left whitespace stripped
         """
 
@@ -270,6 +271,7 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
+        :param dict kwargs: Any named arguments
         :returns: The value with right whitespace stripped
         """
 
@@ -289,6 +291,7 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
+        :param dict kwargs: Any named arguments
         :returns: The value with all whitespace stripped
         """
 
@@ -314,6 +317,7 @@ class SandPaper(object):
         :param str column: A column that indicates what value to normalize
         :param amount: The amount to increment by
         :type amount: int or float
+        :param dict kwargs: Any named arguments
         :returns: The value incremented by ``amount``
         """
 
@@ -337,6 +341,7 @@ class SandPaper(object):
         :param str column: A column that indicates what value to normalize
         :param amount: The amount to decrement by
         :type amount: int or float
+        :param dict kwargs: Any named arguments
         :returns: The value incremented by ``amount``
         """
 
@@ -371,6 +376,7 @@ class SandPaper(object):
         :param substitutes: A dictionary of (regex, value,)
             substitute items for the value
         :type substitutes: dict[str, str]
+        :param dict kwargs: Any named arguments
         :returns: The value potentially substituted by the substitutes
             dictionary
         """
@@ -413,13 +419,17 @@ class SandPaper(object):
         :param str column: A column that indicates what value to normalize
         :param str from_regex: A value matched regex
         :param str to_format: A format for matched value translation
+        :param dict kwargs: Any named arguments
         :returns: The value potentially translated value
         """
 
         value = record[column]
         match = regex.match(from_regex, str(value))
         if match is not None:
-            return to_format.format(*match.groups(), **match.groupdict())
+            return to_format.format(
+                *match.groups(), **match.groupdict(),
+                **kwargs
+            )
         return value
 
     @rule
@@ -463,6 +473,7 @@ class SandPaper(object):
         :param str column: A column that indicates what value to normalize
         :param list[str] from_formats: A list of prioritized date formats
         :param str to_format: A format for date format translation
+        :param dict kwargs: Any named arguments
         :returns: The value potentially translated value
         """
 
