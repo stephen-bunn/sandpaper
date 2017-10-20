@@ -495,6 +495,11 @@ class SandPaper(object):
             Learn more about this format from
             `here <https://pypi.python.org/pypi/braceexpand/0.1.1>`_!
 
+        .. note:: The ``name_generator`` callable will be passed in a
+            `path.Path <https://pathpy.readthedocs.io/en/latest/api.html>`_
+            instance and expects to be returned an appropriate filepath
+            as a string.
+
         .. note:: The default output filepaths simply prefix the input file's
             extension with the ``.sanded`` extension.
 
