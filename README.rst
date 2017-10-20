@@ -1,7 +1,12 @@
 sandpaper
 =========
 
-Python module for table type data normalization
+Simplified table data normalization.
+
+.. image:: https://readthedocs.org/projects/sandpaper/badge/?version=latest
+:target: http://sandpaper.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
 
 Basic Usage
 -----------
