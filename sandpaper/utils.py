@@ -18,7 +18,6 @@ def fancy_glob(from_glob, fancy_path=False):
 
     :param str from_glob: A fancy glob expresion with optional brace expansion
     :returns: A generator which yields matching file paths
-    :rtype: None
     """
 
     discovered = set()

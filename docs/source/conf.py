@@ -19,6 +19,10 @@
 
 import os
 import sys
+
+import sphinx_readable_theme
+
+
 sys.path.insert(0, os.path.abspath('../..'))
 
 
@@ -31,9 +35,11 @@ sys.path.insert(0, os.path.abspath('../..'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
+extensions = [
+    'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode']
+    'sphinx.ext.viewcode',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -85,7 +91,8 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme_path = [sphinx_readable_theme.get_html_theme_path()]
+html_theme = 'readable'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -103,15 +110,15 @@ html_static_path = ['_static']
 #
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
-        'donate.html',
-    ]
-}
+# html_sidebars = {
+#     '**': [
+#         'about.html',
+#         'navigation.html',
+#         'relations.html',
+#         'searchbox.html',
+#         'donate.html',
+#     ]
+# }
 
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -169,9 +176,6 @@ texinfo_documents = [
      author, 'SandPaper', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/3/': None}

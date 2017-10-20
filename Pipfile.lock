@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "cda6e4955e1267c5b076540d24a25de2ad7ae36781253052a5d96d0566d8e610"
+            "sha256": "a9fedd0244b5ebb576f4afb6cc13a64daf9f47bfbd418e0bf32e02dce6bc1e0f"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -79,24 +79,24 @@
         },
         "pyexcel": {
             "hashes": [
-                "sha256:b447bee6501ba37dc504a36443d2be30f4b816d0634b18498343fe093df934d3",
-                "sha256:c34627bc7df3c0657595237d74771b6bb600983ac6b0b4e8a6b4efb86517e682"
+                "sha256:a748bddaa36a15ade0595289a3a07d71548128cef9f227655383d7f630bc39d9",
+                "sha256:27be82ce2954b6276c4c36530a68ba37db8ee6a4745c0787321f2dee38df61a9"
             ],
-            "version": "==0.5.4"
+            "version": "==0.5.5"
         },
         "pyexcel-io": {
             "hashes": [
-                "sha256:dec8154d89d79f300d9764976045a17715f3c1978a2b13a383fc94bc66be017e",
-                "sha256:d6ba5cf8513a97a0d3632fbb42f4e77b48c7af9dee35e7d84ea329c92fe365e9"
+                "sha256:298f20c7d6792513ad1736047db537f8bb91518a56b17d040d2fe95b7d369b4f",
+                "sha256:8d01939f089589b270b5d0fc8a4ae60d4a5b80467507545d53bb832751aaa7bb"
             ],
-            "version": "==0.5.1"
+            "version": "==0.5.2"
         },
         "pyexcel-xls": {
             "hashes": [
-                "sha256:d1e0bafee9241ab911ad4721031eae1f3c6c6b8beaad3b289d1699a7e36c4b6f",
-                "sha256:a10e2600ec4aa4d699245e4a5835ccc32169132a503af3df564a782aa671667f"
+                "sha256:0597a11d4439257b4984239dbb79514a0cd7b9758560f4fc5aa7db916ab33c94",
+                "sha256:bf1289b7ec713b645d54ea89a0fdd816dfc4a2617ffebdad56ba33d24ef06cdd"
             ],
-            "version": "==0.5.0"
+            "version": "==0.5.1"
         },
         "python-dateutil": {
             "hashes": [
@@ -409,6 +409,12 @@
                 "sha256:f101efd87fbffed8d8aca6ef307fec57693334f39d32efcbc2fc96ed129f4a3e"
             ],
             "version": "==1.6.4"
+        },
+        "sphinx-readable-theme": {
+            "hashes": [
+                "sha256:f5fe65a2e112cb956b366df41e0fc894ff6b6f0e4a4814fcbff692566db47fc0"
+            ],
+            "version": "==1.3.0"
         },
         "sphinxcontrib-websupport": {
             "hashes": [

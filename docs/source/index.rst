@@ -1,10 +1,6 @@
-.. SandPaper documentation master file, created by
-   sphinx-quickstart on Thu Oct 19 17:09:34 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to SandPaper's documentation!
-=====================================
+SandPaper
+=========
 
 .. toctree::
    :maxdepth: 2
@@ -18,8 +14,8 @@ Welcome to SandPaper's documentation!
 
 
 
-Indices and tables
-==================
+Indices
+=======
 
 * :ref:`genindex`
 * :ref:`modindex`

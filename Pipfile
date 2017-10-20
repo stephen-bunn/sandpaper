@@ -23,5 +23,6 @@ simplejson = "*"
 
 "flake8" = "*"
 ptpython = "*"
-cprofilev = "*"
-sphinx = "*"
+CProfileV = "*"
+Sphinx = "*"
+sphinx-readable-theme = "*"

@@ -6,6 +6,7 @@
 
 import hashlib
 import warnings
+import functools
 import collections
 
 from . import (utils,)
@@ -28,16 +29,8 @@ def rule(func):
     :rtype: callable
     """
 
+    @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        """ The wrapper for a normalization rule.
-
-        :param object self: The calling self of the normalization rule
-        :param list args: Any positional arguments
-        :param dict kwargs: Any named arguments
-        :returns: The calling self of the normalization rule
-        :rtype: object
-        """
-
         self.rules.append((func, kwargs,))
         return self
 
@@ -140,7 +133,7 @@ class SandPaper(object):
         A list of tuples (rule_name, rule_arguments)
 
         :getter: Returns the set rules for the SandPaper instance
-        :rtype: List[Tuple[str, Dict[str, Any]]]
+        :rtype: list[tuple(str, dict[str,....])]
         """
 
         if not hasattr(self, '_rules'):
@@ -188,7 +181,6 @@ class SandPaper(object):
         :param dict kwargs: Any named arguments, for the kwargs of
             ``callable_filter``
         :returns: A generator yielding allowed (column, value) pairs
-        :rtype: Generator[Tuple[str, Any], None, None]
         """
 
         if isinstance(column_filter, six.string_types):
@@ -215,6 +207,7 @@ class SandPaper(object):
 
         :param str from_file: The file to apply rules to
         :param dict kwargs: Any named arguments, for the reading of the file
+        :returns: Yields normalized records
         """
 
         for record in pyexcel.iget_records(
@@ -240,6 +233,8 @@ class SandPaper(object):
         :param str from_file: The input filepath
         :param str to_file: The output filepath
         :param dict kwargs: Any named arguments, passed to ``_apply_rules``
+        :returns: The saved normalized filepath
+        :rtype: str
         """
 
         pyexcel.isave_as(
@@ -258,7 +253,6 @@ class SandPaper(object):
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
         :returns: The value with left whitespace stripped
-        :rtype: Any
         """
 
         value = record[column]
@@ -278,7 +272,6 @@ class SandPaper(object):
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
         :returns: The value with right whitespace stripped
-        :rtype: Any
         """
 
         value = record[column]
@@ -298,7 +291,6 @@ class SandPaper(object):
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
         :returns: The value with all whitespace stripped
-        :rtype: Any
         """
 
         value = record[column]
@@ -321,9 +313,9 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param Union[int, float] amount: The amount to increment by
+        :param amount: The amount to increment by
+        :type amount: int or float
         :returns: The value incremented by ``amount``
-        :rtype: Any
         """
 
         value = record[column]
@@ -344,9 +336,9 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param Union[int, float] amount: The amount to decrement by
+        :param amount: The amount to decrement by
+        :type amount: int or float
         :returns: The value incremented by ``amount``
-        :rtype: Any
         """
 
         value = record[column]
@@ -365,6 +357,7 @@ class SandPaper(object):
         Take for example the following SandPaper instance:
 
         .. code-block:: python
+
             s = SandPaper('my-sandpaper').substitute(substitutes={
                 r'^\d+.*$': 'STARTED WITH A NUMBER'
             })
@@ -376,11 +369,11 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param Dict[str, str] substitutes: A dictionary of (regex, value,)
+        :param substitutes: A dictionary of (regex, value,)
             substitute items for the value
+        :type substitutes: dict[str, str]
         :returns: The value potentially substituted by the substitutes
             dictionary
-        :rtype: Any
         """
 
         value = record[column]
@@ -400,6 +393,7 @@ class SandPaper(object):
         Take for example the following SandPaper instance:
 
         .. code-block:: python
+
             s = SandPaper('my-sandpaper').translate_text(
                 column_filter=r'^group_definition$',
                 from_regex=r'^group(?P<group_id>\d+)\s*(.*)$',
@@ -421,7 +415,6 @@ class SandPaper(object):
         :param str from_regex: A value matched regex
         :param str to_format: A format for matched value translation
         :returns: The value potentially translated value
-        :rtype: Any
         """
 
         value = record[column]
@@ -441,6 +434,7 @@ class SandPaper(object):
         Take for example the following SandPaper instance:
 
         .. code-block:: python
+
             s = SandPaper('my-sandpaper').translate_date(
                 column_filter=r'^(.*)_date$',
                 from_formats=['%Y-%m-%d', '%m-%d'],
@@ -468,10 +462,9 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param List[str] from_formats: A list of prioritized date formats
+        :param list[str] from_formats: A list of prioritized date formats
         :param str to_format: A format for date format translation
         :returns: The value potentially translated value
-        :rtype: Any
         """
 
         if 'column_filter' not in kwargs:
@@ -511,10 +504,9 @@ class SandPaper(object):
         :param str from_glob: A matching glob for all desired files
         :param int max_workers: The maximum amount of files to process in
             parallel
-        :param Callable[[path.Path], str] name_generator: A callable that
+        :param callable name_generator: A callable that
             generates output filepaths given the path.Path instance
         :returns: Yields output filepaths (not in any consistent order)
-        :rtype: Generator[str, None, None]
         """
         # TODO: add file metainfo to the kwargs
         from_glob = path.Path(from_glob).expand().abspath().normpath()
@@ -556,7 +548,7 @@ class SandPaper(object):
         :raises ValueError:
             - if the parent directory of ``to_file`` does not exist
         :returns: ``to_file`` if specified, otherwise the serialization dict
-        :rtype: Union[str, Dict[str, List[Tuple[str, Dict[str, Any]]]]]
+        :rtype: str or dict[str,tuple(str,dict[str,....])]
         """
 
         serial = {
