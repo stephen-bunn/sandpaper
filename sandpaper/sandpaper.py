@@ -11,12 +11,12 @@ import collections
 from . import (utils,)
 
 import six
+import path
 import regex
 import psutil
 import pyexcel
 import simplejson
 import dateparser
-from path import Path
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -226,7 +226,8 @@ class SandPaper(object):
                     record,
                     **rule_kwargs
                 ):
-                    record[column] = rule(self, value, **rule_kwargs)
+                    record[column] = \
+                        rule(self, record.copy(), column, **rule_kwargs)
             yield record
 
     def _apply_to(self, from_file, to_file, **kwargs):
@@ -248,16 +249,19 @@ class SandPaper(object):
         return to_file
 
     @rule
-    def lstrip(self, value, **kwargs):
+    def lstrip(self, record, column, **kwargs):
         """ A basic lstrip rule for a given value.
 
         Only applies to text type variables.
 
-        :param Any value: A value to normalize
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :returns: The value with left whitespace stripped
         :rtype: Any
         """
 
+        value = record[column]
         return (
             value.lstrip()
             if isinstance(value, six.text_type) else
@@ -265,16 +269,19 @@ class SandPaper(object):
         )
 
     @rule
-    def rstrip(self, value, **kwargs):
+    def rstrip(self, record, column, **kwargs):
         """ A basic rstrip rule for a given value.
 
         Only applies to text type variables.
 
-        :param Any value: A value to normalize
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :returns: The value with right whitespace stripped
         :rtype: Any
         """
 
+        value = record[column]
         return (
             value.rstrip()
             if isinstance(value, six.text_type) else
@@ -282,16 +289,19 @@ class SandPaper(object):
         )
 
     @rule
-    def strip(self, value, **kwargs):
+    def strip(self, record, column, **kwargs):
         """ A basic strip rule for a given value.
 
         Only applies to text type variables.
 
-        :param Any value: A value to normalize
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :returns: The value with all whitespace stripped
         :rtype: Any
         """
 
+        value = record[column]
         return (
             value.strip()
             if isinstance(value, six.text_type) else
@@ -299,39 +309,57 @@ class SandPaper(object):
         )
 
     @rule
-    def increment(self, value, amount, **kwargs):
+    def increment(
+        self, record, column,
+        amount,
+        **kwargs
+    ):
         """ A basic increment rule for a given value.
 
         Only applies to numeric (int, float) type variables.
 
-        :param Any value: A value to increment
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :param Union[int, float] amount: The amount to increment by
         :returns: The value incremented by ``amount``
         :rtype: Any
         """
 
+        value = record[column]
         if isinstance(value, (int, float,)):
             return (value + amount)
         return value
 
     @rule
-    def decrement(self, value, amount, **kwargs):
+    def decrement(
+        self, record, column,
+        amount,
+        **kwargs
+    ):
         """ A basic decrement rule for a given value.
 
         Only applies to numeric (int, float) type variables.
 
-        :param Any value: A value to decrement
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :param Union[int, float] amount: The amount to decrement by
         :returns: The value incremented by ``amount``
         :rtype: Any
         """
 
+        value = record[column]
         if isinstance(value, (int, float,)):
             return (value - amount)
         return value
 
     @rule
-    def substitute(self, value, substitutes, **kwargs):
+    def substitute(
+        self, record, column,
+        substitutes,
+        **kwargs
+    ):
         """ A substitution rule for a given value.
 
         Take for example the following SandPaper instance:
@@ -345,7 +373,9 @@ class SandPaper(object):
         This will substitute all values that start with a number with the
         text ``STARTED WITH A NUMBER``.
 
-        :param Any value: A value to `potentially` substitute
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :param Dict[str, str] substitutes: A dictionary of (regex, value,)
             substitute items for the value
         :returns: The value potentially substituted by the substitutes
@@ -353,13 +383,18 @@ class SandPaper(object):
         :rtype: Any
         """
 
+        value = record[column]
         for (from_regex, to_value) in substitutes.items():
             if regex.match(from_regex, str(value)):
                 return to_value
         return value
 
     @rule
-    def translate_text(self, value, from_regex, to_format, **kwargs):
+    def translate_text(
+        self, record, column,
+        from_regex, to_format,
+        **kwargs
+    ):
         """ A text translation rule for a given value.
 
         Take for example the following SandPaper instance:
@@ -380,20 +415,27 @@ class SandPaper(object):
             passed as ``*args`` and ``**kwargs`` to the format method of the
             returned ``to_format`` string.
 
-        :param Any value: A value to `potentially` translate
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :param str from_regex: A value matched regex
         :param str to_format: A format for matched value translation
         :returns: The value potentially translated value
         :rtype: Any
         """
 
+        value = record[column]
         match = regex.match(from_regex, str(value))
         if match is not None:
             return to_format.format(*match.groups(), **match.groupdict())
         return value
 
     @rule
-    def translate_date(self, value, from_formats, to_format, **kwargs):
+    def translate_date(
+        self, record, column,
+        from_formats, to_format,
+        **kwargs
+    ):
         """ A date translation rule for a given value.
 
         Take for example the following SandPaper instance:
@@ -423,7 +465,9 @@ class SandPaper(object):
         .. note:: Raises a UserWarning if the lack of a ``column_filter`` is
             detected.
 
-        :param Any value: A value to `potentially` translate
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
         :param List[str] from_formats: A list of prioritized date formats
         :param str to_format: A format for date format translation
         :returns: The value potentially translated value
@@ -435,6 +479,7 @@ class SandPaper(object):
                 'translate_date usually does not function well without an '
                 'explicit column_filter'
             ), UserWarning)
+        value = record[column]
         parsed_date = dateparser.parse(
             str(value),
             date_formats=from_formats
@@ -472,7 +517,7 @@ class SandPaper(object):
         :rtype: Generator[str, None, None]
         """
         # TODO: add file metainfo to the kwargs
-        from_glob = Path(from_glob).expand().abspath().normpath()
+        from_glob = path.Path(from_glob).expand().abspath().normpath()
         futures = []
         try:
             # build a thread pool for processing files in parallel
@@ -521,7 +566,7 @@ class SandPaper(object):
             ]
         }
         if to_file is not None:
-            if not Path(to_file).parent.isdir():
+            if not path.Path(to_file).parent.isdir():
                 raise ValueError((
                     "parent directory of '{to_file}' does not exist"
                 ).format(**locals()))
@@ -542,7 +587,7 @@ class SandPaper(object):
         :rtype: SandPaper
         """
 
-        if not Path(from_file).isfile():
+        if not path.Path(from_file).isfile():
             raise ValueError((
                 "no such file '{from_file}' exists"
             ).format(**locals()))
