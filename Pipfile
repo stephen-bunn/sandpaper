@@ -17,12 +17,13 @@ futures = "*"
 psutil = "*"
 dateparser = "*"
 simplejson = "*"
+pyexcel-xlsx = "*"
 
 
 [dev-packages]
 
 "flake8" = "*"
 ptpython = "*"
-CProfileV = "*"
-Sphinx = "*"
+cprofilev = "*"
+sphinx = "*"
 sphinx-readable-theme = "*"

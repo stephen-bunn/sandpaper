@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a9fedd0244b5ebb576f4afb6cc13a64daf9f47bfbd418e0bf32e02dce6bc1e0f"
+            "sha256": "74943269f40e05f31f2bfe0947e268fe69dfb5266f7aa7afa0d65469ee94e057"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -40,6 +40,12 @@
             ],
             "version": "==0.6.0"
         },
+        "et-xmlfile": {
+            "hashes": [
+                "sha256:614d9722d572f6246302c4491846d2c393c199cfa4edc9af593437691683335b"
+            ],
+            "version": "==1.0.1"
+        },
         "futures": {
             "hashes": [
                 "sha256:c4884a65654a7c45435063e14ae85280eb1f111d94e542396717ba9828c4337f",
@@ -47,12 +53,24 @@
             ],
             "version": "==3.1.1"
         },
+        "jdcal": {
+            "hashes": [
+                "sha256:b760160f8dc8cc51d17875c6b663fafe64be699e10ce34b6a95184b5aa0fdc9e"
+            ],
+            "version": "==1.3"
+        },
         "lml": {
             "hashes": [
                 "sha256:58a11170ecb0ce5e4680ad8971f1e353b795d58953217d65c9a56e0d774261d6",
                 "sha256:12783c8851bb1b1aacf6d139aa41fb529e1723bff863e71034af07a55bf1e5a3"
             ],
             "version": "==0.0.1"
+        },
+        "openpyxl": {
+            "hashes": [
+                "sha256:95e007f4d121f4fd73f39a6d74a883c75e9fa9d96de91d43c1641c103c3a9b18"
+            ],
+            "version": "==2.4.9"
         },
         "path.py": {
             "hashes": [
@@ -95,6 +113,13 @@
             "hashes": [
                 "sha256:0597a11d4439257b4984239dbb79514a0cd7b9758560f4fc5aa7db916ab33c94",
                 "sha256:bf1289b7ec713b645d54ea89a0fdd816dfc4a2617ffebdad56ba33d24ef06cdd"
+            ],
+            "version": "==0.5.1"
+        },
+        "pyexcel-xlsx": {
+            "hashes": [
+                "sha256:558822e172d0c69cc7a39ecda9db98684e7084928fbc89c9142b6f74ea6f1e4b",
+                "sha256:037418f7dbe3cb90e087da4d0c8990152d2d378444f26678e918e1d419e602e7"
             ],
             "version": "==0.5.1"
         },
