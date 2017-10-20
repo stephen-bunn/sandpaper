@@ -17,7 +17,6 @@ import regex
 import psutil
 import pyexcel
 import simplejson
-import dateparser
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -466,6 +465,10 @@ class SandPaper(object):
         :param str to_format: A format for date format translation
         :returns: The value potentially translated value
         """
+
+        # NOTE: local import of dateparser, potentailly slow due to issue
+        # https://github.com/scrapinghub/dateparser/issues/253
+        import dateparser
 
         if 'column_filter' not in kwargs:
             warnings.warn((
