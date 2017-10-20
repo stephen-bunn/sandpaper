@@ -1,5 +1,7 @@
-sandpaper package
-=================
+sandpaper
+=========
+
+This is the base sandpaper package that gets imported.
 
 .. automodule:: sandpaper
     :members:
@@ -24,5 +26,3 @@ sandpaper\.utils module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
