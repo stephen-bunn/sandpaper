@@ -20,7 +20,7 @@
 import os
 import sys
 
-import sphinx_readable_theme
+import flask_sphinx_themes
 
 
 sys.path.insert(0, os.path.abspath('../..'))
@@ -80,7 +80,7 @@ language = None
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'flask_sphinx_themes.pygments.FlaskyStyle'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -91,14 +91,18 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme_path = [sphinx_readable_theme.get_html_theme_path()]
-html_theme = 'readable'
+html_theme_path = [flask_sphinx_themes.get_path()]
+html_theme = 'flask'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'github_fork': 'stephen-bunn/sandpaper',
+    'index_logo': 'logo.png',
+    'index_logo_height': '200px'
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -196,7 +196,7 @@ class SandPaper(object):
                 if not value_filter.match(str(value)):
                     continue
             if callable(callable_filter):
-                if not callable_filter(**kwargs):
+                if not callable_filter(record, column, **kwargs):
                     continue
 
             yield (column, value,)

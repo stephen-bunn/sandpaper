@@ -2,22 +2,18 @@
 SandPaper
 =========
 
-*A simplified table-type data normalization module.*
-
-
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    getting-started
    available-rules
 
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Reference:
+   :maxdepth: 3
+   :caption: Module Reference:
 
    modules
-
 
 
 Indices
