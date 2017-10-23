@@ -120,6 +120,9 @@ In this instance the whitespace stripping will be applied to all ``.csv`` files 
       print(output_filepath)
 
 
+.. important:: If applying to ``.csv`` files, unnecessary quotations are implicitly removed as part of the reading and saving processes.
+   Currently there is no way of disabling this... sorry 😞.
+
 .. _getting_started-rule-filters:
 
 Rule Filters
