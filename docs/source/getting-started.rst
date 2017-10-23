@@ -149,18 +149,15 @@ Saving SandPapers
 '''''''''''''''''
 
 It is possible to export a :class:`~sandpaper.sandpaper.SandPaper` instance using the :func:`~sandpaper.sandpaper.SandPaper.export` function.
-This exports the configuration of the intance to a `json <http://www.json.org>`__ format either to a provided filepath or to stdout.
+This exports the configuration of the intance to a `json <http://www.json.org>`__ format.
 
 .. code-block:: python
 
-    # for exporting to a file
-    my_sandpaper.export('/home/USER/my-sandpaper.json')
-    # for writing the export to stdout
-    my_sandpaper.export()
+    serialized = my_sandpaper.export()
 
 
-This exported format can be used to bootstrap a new :class:`~sandpaper.sandpaper.SandPaper` instance by providing the filepath where the exported data is stored to the :func:`~sandpaper.sandpaper.SandPaper.load` method.
+This exported format can be used to bootstrap a new :class:`~sandpaper.sandpaper.SandPaper` instance by providing the serialization to the :func:`~sandpaper.sandpaper.SandPaper.load` method.
 
 .. code-block:: python
 
-    new_sandpaper = SandPaper.load('/home/USER/my-sandpaper.json')
+    new_sandpaper = SandPaper.load(serialized)
