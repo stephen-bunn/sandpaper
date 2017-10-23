@@ -20,17 +20,41 @@ import simplejson
 from concurrent.futures import ThreadPoolExecutor
 
 
-def rule(func):
-    """ A meta wrapper for normalization rules.
+def value_rule(func):
+    """ A meta wrapper for value normalization rules.
+
+    .. note:: Value rules take in a full record and a column name as
+        implicit parameters. They are expected to return the value at
+        ``record[column]`` that has be normalized by the rule.
 
     :param callable func: The normalization rule
-    :returns: The wrapped normlaization rule
+    :returns: The wrapped normalization rule
     :rtype: callable
     """
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        self.rules.append((func, kwargs,))
+        self.value_rules.append((func, kwargs,))
+        return self
+
+    return wrapper
+
+
+def record_rule(func):
+    """ A meta wrapper for table normalization rules.
+
+    .. note:: Record rules are applied after all value rules have been applied
+        to a record. They take in a full record as an implicit parameter and
+        are expected to return the normalized record back.
+
+    :param callable func: The normalization rule
+    :returns: The wrapped normalization rule
+    :rtype: callable
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        self.record_rules.append((func, kwargs,))
         return self
 
     return wrapper
@@ -67,8 +91,19 @@ class SandPaper(object):
         """
 
         return (
-            '<{self.__class__.__name__} ({rule_count} rules) "{self.name}">'
-        ).format(rule_count=len(self.rules), **locals())
+            '<{self.__class__.__name__} ({self.uid}) "{self.name}">'
+        ).format(self=self)
+
+    def __eq__(self, other):
+        """ Evaluates if two instances are the same.
+
+        .. note:: Name is not taken into consideration for instance equality.
+
+        :returns: A boolean if two instances are the same
+        :rtype: bool
+        """
+
+        return hash(self) == hash(other)
 
     def __hash__(self):
         """ Returns an identifying integer for the calling SandPaper instance.
@@ -119,15 +154,15 @@ class SandPaper(object):
         """
 
         hasher = hashlib.md5()
-        for (rule, rule_kwargs,) in self.rules:
+        for (rule, rule_kwargs,) in (self.record_rules + self.value_rules):
             hasher.update((
                 '{rule.__name__}({rule_kwargs})'
             ).format(**locals()).encode('utf-8'))
         return hasher.hexdigest()
 
     @property
-    def rules(self):
-        """ The set rules for the SandPaper instance.
+    def value_rules(self):
+        """ The set of value rules for the SandPaper instance.
 
         A list of tuples (rule_name, rule_arguments)
 
@@ -135,9 +170,23 @@ class SandPaper(object):
         :rtype: list[tuple(str, dict[str,....])]
         """
 
-        if not hasattr(self, '_rules'):
-            self._rules = []
-        return self._rules
+        if not hasattr(self, '_value_rules'):
+            self._value_rules = []
+        return self._value_rules
+
+    @property
+    def record_rules(self):
+        """ The set of table rules for the SandPaper instance.
+
+        A list of tuples (rule_name, rule_arguments)
+
+        :getter: Returns the set rules for the SandPaper instance
+        :rtype: list[tuple(str, dict[str,....])]
+        """
+
+        if not hasattr(self, '_record_rules'):
+            self._record_rules = []
+        return self._record_rules
 
     @property
     def default_workers(self):
@@ -213,13 +262,18 @@ class SandPaper(object):
             file_name=from_file,
             **kwargs
         ):
-            for (rule, rule_kwargs,) in self.rules:
+            # apply filtered value rules
+            for (rule, rule_kwargs,) in self.value_rules:
                 for (column, value,) in self._filter_allowed(
                     record,
                     **rule_kwargs
                 ):
                     record[column] = \
                         rule(self, record.copy(), column, **rule_kwargs)
+            # apply table rules
+            for (rule, rule_kwargs,) in self.record_rules:
+                record = rule(self, record.copy(), **rule_kwargs)
+
             yield record
 
     def _apply_to(self, from_file, to_file, **kwargs):
@@ -238,12 +292,93 @@ class SandPaper(object):
 
         pyexcel.isave_as(
             records=self._apply_rules(from_file, **kwargs),
-            dest_file_name=to_file
+            dest_file_name=to_file,
+            with_keys=False
         )
         return to_file
 
-    @rule
-    def lstrip(self, record, column, **kwargs):
+    @value_rule
+    def lower(self, record, column, **kwargs):
+        """ A basic lowercase rule for a given value.
+
+        Only applies to text type variables
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
+        :param dict kwargs: Any named arguments
+        :returns: The value lowercased
+        """
+
+        value = record[column]
+        return (
+            value.lower()
+            if isinstance(value, six.text_type) else
+            value
+        )
+
+    @value_rule
+    def upper(self, record, column, **kwargs):
+        """ A basic uppercase rule for a given value.
+
+        Only applies to text type variables
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
+        :param dict kwargs: Any named arguments
+        :returns: The value uppercased
+        """
+
+        value = record[column]
+        return (
+            value.upper()
+            if isinstance(value, six.text_type) else
+            value
+        )
+
+    @value_rule
+    def capitalize(self, record, column, **kwargs):
+        """ A basic capitalization rule for a given value.
+
+        Only applies to text type variables
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
+        :param dict kwargs: Any named arguments
+        :returns: The value capatilized
+        """
+
+        value = record[column]
+        return (
+            value.capitalize()
+            if isinstance(value, six.text_type) else
+            value
+        )
+
+    @value_rule
+    def title(self, record, column, **kwargs):
+        """ A basic titlecase rule for a given value.
+
+        Only applies to text type variables
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column: A column that indicates what value to normalize
+        :param dict kwargs: Any named arguments
+        :returns: The value titlecased
+        """
+
+        value = record[column]
+        return (
+            value.title()
+            if isinstance(value, six.text_type) else
+            value
+        )
+
+    @value_rule
+    def lstrip(self, record, column, content=None, **kwargs):
         """ A basic lstrip rule for a given value.
 
         Only applies to text type variables.
@@ -251,19 +386,20 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
+        :param str content: The content to strip (defaults to whitespace)
         :param dict kwargs: Any named arguments
-        :returns: The value with left whitespace stripped
+        :returns: The value with left content stripped
         """
 
         value = record[column]
         return (
-            value.lstrip()
+            value.lstrip(content)
             if isinstance(value, six.text_type) else
             value
         )
 
-    @rule
-    def rstrip(self, record, column, **kwargs):
+    @value_rule
+    def rstrip(self, record, column, content=None, **kwargs):
         """ A basic rstrip rule for a given value.
 
         Only applies to text type variables.
@@ -271,19 +407,20 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
+        :param str content: The content to strip (defaults to whitespace)
         :param dict kwargs: Any named arguments
-        :returns: The value with right whitespace stripped
+        :returns: The value with right content stripped
         """
 
         value = record[column]
         return (
-            value.rstrip()
+            value.rstrip(content)
             if isinstance(value, six.text_type) else
             value
         )
 
-    @rule
-    def strip(self, record, column, **kwargs):
+    @value_rule
+    def strip(self, record, column, content=None, **kwargs):
         """ A basic strip rule for a given value.
 
         Only applies to text type variables.
@@ -291,18 +428,19 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
+        :param str content: The content to strip (defaults to whitespace)
         :param dict kwargs: Any named arguments
-        :returns: The value with all whitespace stripped
+        :returns: The value with all content stripped
         """
 
         value = record[column]
         return (
-            value.strip()
+            value.strip(content)
             if isinstance(value, six.text_type) else
             value
         )
 
-    @rule
+    @value_rule
     def increment(
         self, record, column,
         amount,
@@ -326,7 +464,7 @@ class SandPaper(object):
             return (value + amount)
         return value
 
-    @rule
+    @value_rule
     def decrement(
         self, record, column,
         amount,
@@ -350,7 +488,7 @@ class SandPaper(object):
             return (value - amount)
         return value
 
-    @rule
+    @value_rule
     def substitute(
         self, record, column,
         substitutes,
@@ -387,7 +525,7 @@ class SandPaper(object):
                 return to_value
         return value
 
-    @rule
+    @value_rule
     def translate_text(
         self, record, column,
         from_regex, to_format,
@@ -432,7 +570,7 @@ class SandPaper(object):
             )
         return value
 
-    @rule
+    @value_rule
     def translate_date(
         self, record, column,
         from_formats, to_format,
@@ -494,6 +632,61 @@ class SandPaper(object):
         if parsed_date is not None:
             return parsed_date.strftime(to_format)
         return value
+
+    @record_rule
+    def add_column(self, record, column_name, column_value, **kwargs):
+        """ Adds a column to a record.
+
+        .. note:: If ``column_value`` is a callable, then the callable should
+            expect the ``record`` as the only parameter and should return
+            the value that should be placed in the newly added column.
+
+            If ``column_value`` is a string, the record is passed in as kwargs
+            to the ``column_value.format`` method.
+
+            Otherwise, ``column_value`` is simply used as the newly added
+            column's value.
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column_name: The name of the column to add
+        :param column_value: The column value to populate the new column with
+        :type column_value: callable or str or ....
+        :param dict kwargs: Any named arguments
+        :returns: The record with a potential newly added column
+        """
+
+        # column already exists, completely ignore adding it
+        if column_name in record:
+            return record
+
+        if callable(column_value):
+            record[column_name] = column_value(record)
+        elif isinstance(column_value, six.string_types):
+            record[column_name] = column_value.format(**record)
+        else:
+            record[column_name] = column_value
+
+        return record
+
+    @record_rule
+    def remove_column(self, record, column_name, **kwargs):
+        """ Removes a column from a record.
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str column_name: The name of the column to remove
+        :param str column_value:
+        :param dict kwargs: Any named arguments
+        :returns: The record with a potential newly removed column
+        """
+
+        # column does not exist, completely ignore removing it
+        if column_name not in record:
+            return record
+
+        del record[column_name]
+        return record
 
     def apply(
         self, from_glob,
@@ -560,49 +753,43 @@ class SandPaper(object):
             # we need to free the resources allocted by the async processes
             pyexcel.free_resources()
 
-    def export(self, to_file=None):
+    def export(self):
         """ Exports a serialization of the active rules.
 
-        :param str to_file: The filepath to write the serialization to
-        :raises ValueError:
-            - if the parent directory of ``to_file`` does not exist
-        :returns: ``to_file`` if specified, otherwise the serialization dict
-        :rtype: str or dict[str,tuple(str,dict[str,....])]
+        :returns: the serialization dict
+        :rtype: dict
         """
 
-        serial = {
-            self.name: [
-                (rule.__name__, rule_kwargs)
-                for (rule, rule_kwargs,) in self.rules
-            ]
+        return {
+            'name': self.name,
+            'rules': {
+                'record': [
+                    (rule.__name__, rule_kwargs)
+                    for (rule, rule_kwargs,) in self.record_rules
+                ],
+                'value': [
+                    (rule.__name__, rule_kwargs)
+                    for (rule, rule_kwargs,) in self.value_rules
+                ]
+            }
         }
-        if to_file is not None:
-            if not path.Path(to_file).parent.isdir():
-                raise ValueError((
-                    "parent directory of '{to_file}' does not exist"
-                ).format(**locals()))
-            with open(to_file, 'w') as fp:
-                simplejson.dump(serial, fp)
-            return to_file
-        else:
-            return serial
 
     @classmethod
-    def load(cls, from_file):
+    def load(cls, serialization):
         """ Creates a new SandPaper instance from an exported serialization.
 
-        :param str from_file: The file where an exported serialization lives
-        :raises ValueError:
-            - if the given ``from_file`` cannot be found
+        :param dict serialization: The exported serialization
         :returns: An SandPaper instance
         :rtype: SandPaper
         """
 
-        if not path.Path(from_file).isfile():
-            raise ValueError((
-                "no such file '{from_file}' exists"
-            ).format(**locals()))
-        with open(from_file, 'r') as fp:
-            exported_data = simplejson.load(fp)
-            for (name, rules,) in exported_data.items():
-                return cls(name, collections.OrderedDict(rules))
+        instance = cls(serialization['name'])
+        instance.value_rules.extend([
+            (getattr(instance, rule_name), rule_kwargs,)
+            for (rule_name, rule_kwargs) in serialization['rules']['value']
+        ])
+        instance.record_rules.extend([
+            (getattr(instance, rule_name), rule_kwargs,)
+            for (rule_name, rule_kwargs) in serialization['rules']['record']
+        ])
+        return instance
