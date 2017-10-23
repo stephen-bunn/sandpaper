@@ -102,3 +102,4 @@ ENV/
 
 # sandpaper settings
 main.py
+*.sanded.*

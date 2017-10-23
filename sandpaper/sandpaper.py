@@ -4,10 +4,10 @@
 # Copyright (c) 2017 Stephen Bunn (stephen@bunn.io)
 # MIT License <https://opensource.org/licenses/MIT>
 
+import os
 import hashlib
 import warnings
 import functools
-import collections
 
 from . import (utils,)
 
@@ -16,8 +16,7 @@ import path
 import regex
 import psutil
 import pyexcel
-import simplejson
-from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
 
 
 def value_rule(func):
@@ -138,7 +137,7 @@ class SandPaper(object):
         :returns: Nothing
         """
 
-        assert isinstance(name, six.text_type) and len(name) > 0, (
+        assert isinstance(name, six.string_types) and len(name) > 0, (
             'name expected a string of positive length, received "{name}"'
         ).format(**locals())
         self._name = name
@@ -293,7 +292,8 @@ class SandPaper(object):
         pyexcel.isave_as(
             records=self._apply_rules(from_file, **kwargs),
             dest_file_name=to_file,
-            with_keys=False
+            with_keys=False,
+            dest_lineterminator=os.linesep
         )
         return to_file
 
@@ -313,7 +313,7 @@ class SandPaper(object):
         value = record[column]
         return (
             value.lower()
-            if isinstance(value, six.text_type) else
+            if isinstance(value, six.string_types) else
             value
         )
 
@@ -333,7 +333,7 @@ class SandPaper(object):
         value = record[column]
         return (
             value.upper()
-            if isinstance(value, six.text_type) else
+            if isinstance(value, six.string_types) else
             value
         )
 
@@ -353,7 +353,7 @@ class SandPaper(object):
         value = record[column]
         return (
             value.capitalize()
-            if isinstance(value, six.text_type) else
+            if isinstance(value, six.string_types) else
             value
         )
 
@@ -373,7 +373,7 @@ class SandPaper(object):
         value = record[column]
         return (
             value.title()
-            if isinstance(value, six.text_type) else
+            if isinstance(value, six.string_types) else
             value
         )
 
@@ -394,7 +394,7 @@ class SandPaper(object):
         value = record[column]
         return (
             value.lstrip(content)
-            if isinstance(value, six.text_type) else
+            if isinstance(value, six.string_types) else
             value
         )
 
@@ -415,7 +415,7 @@ class SandPaper(object):
         value = record[column]
         return (
             value.rstrip(content)
-            if isinstance(value, six.text_type) else
+            if isinstance(value, six.string_types) else
             value
         )
 
@@ -436,7 +436,7 @@ class SandPaper(object):
         value = record[column]
         return (
             value.strip(content)
-            if isinstance(value, six.text_type) else
+            if isinstance(value, six.string_types) else
             value
         )
 
@@ -725,7 +725,7 @@ class SandPaper(object):
         futures = []
         try:
             # build a thread pool for processing files in parallel
-            with ThreadPoolExecutor(max_workers=(
+            with concurrent.futures.ThreadPoolExecutor(max_workers=(
                 max_workers
                 if (
                     isinstance(max_workers, six.integer_types) and
