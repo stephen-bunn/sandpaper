@@ -12,8 +12,8 @@ Value Rules
 
 These rules are applied to every value that passes the specified rule filters documented in :ref:`getting_started-rule-filters`.
 
-lower
-'''''
+:func:`~sandpaper.sandpaper.SandPaper.lower`
+''''''''''''''''''''''''''''''''''''''''''''
 A basic rule that lowercases the text in a value.
 
 .. code-block:: python
@@ -28,8 +28,8 @@ DATa   data
 ====== ======
 
 
-upper
-'''''
+:func:`~sandpaper.sandpaper.SandPaper.upper`
+''''''''''''''''''''''''''''''''''''''''''''
 A basic rule that uppercases the text in a value.
 
 .. code-block:: python
@@ -44,8 +44,8 @@ daTa   DATA
 ====== ======
 
 
-capitalize
-''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.capitalize`
+'''''''''''''''''''''''''''''''''''''''''''''''''
 A basic rule that capitalizes the text in a value.
 
 .. code-block:: python
@@ -60,8 +60,8 @@ daTa   Data
 ====== ======
 
 
-title
-'''''
+:func:`~sandpaper.sandpaper.SandPaper.title`
+''''''''''''''''''''''''''''''''''''''''''''
 A basic rule that titlecases the text in a value.
 
 .. code-block:: python
@@ -76,8 +76,8 @@ mY dAta My Data
 ======= =======
 
 
-lstrip
-''''''
+:func:`~sandpaper.sandpaper.SandPaper.lstrip`
+'''''''''''''''''''''''''''''''''''''''''''''
 A basic rule that strips all *left* whitespace from a value.
 
 .. code-block:: python
@@ -92,8 +92,8 @@ Input  Output
 ====== ======
 
 
-rstrip
-''''''
+:func:`~sandpaper.sandpaper.SandPaper.rstrip`
+'''''''''''''''''''''''''''''''''''''''''''''
 A basic rule that strips all *right* whitespace from a value.
 
 .. code-block:: python
@@ -108,8 +108,8 @@ data□□ data
 ====== ======
 
 
-strip
-'''''
+:func:`~sandpaper.sandpaper.SandPaper.strip`
+''''''''''''''''''''''''''''''''''''''''''''
 A basic rule that strips *all* whitespace from a value.
 
 .. code-block:: python
@@ -124,8 +124,8 @@ Input  Output
 ====== ======
 
 
-substitute
-''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.substitute`
+'''''''''''''''''''''''''''''''''''''''''''''''''
 A substitution rule that replaces regex matches with specified values.
 
 .. code-block:: python
@@ -146,8 +146,8 @@ NC     North Carolina
 ====== ==============
 
 
-translate_text
-''''''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.translate_text`
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
 A translation rule that translate regex matches to a specified format.
 
 .. code-block:: python
@@ -167,8 +167,8 @@ group_0   0
 ========= ==============
 
 
-translate_date
-''''''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.translate_date`
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
 A translation rule that translate greedily evaluated dates to a specified datetime format.
 
 .. note:: This rule is very greedy and can potentailly evaluate dates incorrectly.
@@ -196,8 +196,8 @@ Record Rules
 
 These rules are applied to every record regardless of rule filters documented in :ref:`getting_started-rule-filters`.
 
-add_column
-''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.add_column`
+'''''''''''''''''''''''''''''''''''''''''''''''''
 Adds a column to every record.
 
 The given ``column_value`` can either be a base type variable or a callable.
@@ -239,8 +239,8 @@ id name  value uuid
 == ===== ===== ====================================
 
 
-remove_column
-'''''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.remove_column`
+''''''''''''''''''''''''''''''''''''''''''''''''''''
 Removes a column from every record.
 
 .. code-block:: python
@@ -269,3 +269,40 @@ id value
 1  world
 2  table
 == =====
+
+
+Be Explicit
+-----------
+
+Some rules have named arguments that are also required.
+This may look strange to users familiar with the standard ``*args``, ``**kwargs`` function setup, but because of the way that rules are registered and executed, some rules required explicit usage of named paramters.
+An example of this is the :func:`~sandpaper.sandpaper.SandPaper.substitute` rule.
+This rule expects a named parameter ``substitutes``.
+
+.. code-block:: python
+
+   SandPaper().substitute(substitutes={
+      r'KEY': 'VALUE'
+   })
+
+
+When applied this rule works as intended (mainly substituting the text ``KEY`` with ``VALUE``).
+However, if the users specifies the ``substitute`` rule like the following:
+
+.. code-block:: python
+
+   SandPaper().substitute({
+      r'KEY': 'VALUE'
+   })
+
+no error will be thrown right away.
+However, when the user tries to apply the :class:`~sandpaper.sandpaper.SandPaper` instance a ``TypeError`` will be thrown saying the following:
+::
+
+   TypeError: substitute() missing 1 required positional argument: 'substitutes'
+   substitute() missing 1 required positional argument: 'substitutes'
+
+
+This is due to how the ``substitutes`` are stored as ``kwargs`` rather than ``args`` to the ``substitute`` function.
+
+**TLDR:** *Be explicit with the parameters of all rules!*
