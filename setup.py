@@ -18,13 +18,14 @@ setuptools.setup(
     author=const.module_author,
     author_email=const.module_contact,
     url='https://github.com/stephen-bunn/sandpaper',
-    platforms='Unix',
+    platforms='posix',
     include_package_data=True,
-    install_requires=[
-        requirement.split('--hash')[0].strip()
+    install_requires=list(
+        requirement.strip()
         for requirement in open('requirements.txt', 'r').readlines()
-    ],
+    ),
     packages=[
-        'sandpaper'
-    ]
+        'sandpaper',
+    ],
+    classifiers=const.module_classifiers,
 )

@@ -18,14 +18,15 @@ psutil = "*"
 dateparser = "*"
 simplejson = "*"
 pyexcel-xlsx = "*"
+pyexcel-io = "*"
 
 
 [dev-packages]
 
 "flake8" = "*"
 ptpython = "*"
-CProfileV = "*"
-Sphinx = "*"
-Flask-Sphinx-Themes = "*"
+sphinx = "*"
+flask-sphinx-themes = "*"
 nose = "*"
 coverage = "*"
+cprofilev = "*"
