@@ -8,8 +8,6 @@ This is the base sandpaper package that gets imported.
     :undoc-members:
     :show-inheritance:
 
-Submodules
-----------
 
 sandpaper\.sandpaper module
 ---------------------------

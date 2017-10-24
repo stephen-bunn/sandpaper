@@ -679,7 +679,6 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column_name: The name of the column to remove
-        :param str column_value:
         :param dict kwargs: Any named arguments
         :returns: The record with a potential newly removed column
         """
