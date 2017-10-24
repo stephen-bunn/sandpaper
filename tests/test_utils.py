@@ -12,6 +12,7 @@ from sandpaper.utils import (
     fancy_glob,
 )
 
+import six
 import path
 
 
@@ -28,6 +29,12 @@ class UtilTest(unittest.TestCase):
                 'static/utils/'
             ))
         return self._static_dir
+
+    def assertCountEqual(self, *args, **kwargs):
+        if six.PY2:
+            self.assertItemsEqual(*args, **kwargs)
+        elif six.PY3:
+            super().assertCountEqual(*args, **kwargs)
 
     def test_fancy_glob(self):
         """ Test the ``fancy_glob`` method.

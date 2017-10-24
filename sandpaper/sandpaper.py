@@ -564,9 +564,12 @@ class SandPaper(object):
         value = record[column]
         match = regex.match(from_regex, str(value))
         if match is not None:
+            # NOTE: Would prefer to use PEP448, but have to do this for PY2
+            named_groups = kwargs.copy()
+            named_groups.update(match.groupdict())
+
             return to_format.format(
-                *match.groups(), **match.groupdict(),
-                **kwargs
+                *match.groups(), **kwargs
             )
         return value
 

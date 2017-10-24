@@ -12,8 +12,10 @@ import unittest
 
 import sandpaper
 
+import six
 
-class BaseRuleTest(abc.ABC, unittest.TestCase):
+
+class BaseRuleTest(six.with_metaclass(abc.ABCMeta, unittest.TestCase)):
     """ The base rule test.
     """
 
