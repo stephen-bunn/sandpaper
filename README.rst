@@ -1,4 +1,4 @@
-sandpaper
+SandPaper
 =========
 
 Simplified table data normalization.
