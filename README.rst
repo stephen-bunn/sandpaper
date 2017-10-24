@@ -6,6 +6,14 @@ Simplified table data normalization.
 
 |
 
+.. image:: https://badge.fury.io/py/sandpaper.svg
+   :target: https://badge.fury.io/py/sandpaper
+   :alt: PyPi Status
+
+.. image:: https://img.shields.io/pypi/pyversions/sandpaper.svg
+   :target: https://pypi.org/project/sandpaper/
+   :alt: Supported Versions
+
 .. image:: https://readthedocs.org/projects/sandpaper/badge/?version=latest
    :target: http://sandpaper.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
