@@ -10,7 +10,7 @@
 
 __name__ = 'sandpaper'
 __description__ = 'Simplified table-type data normalization'
-__version__ = '0.0.0'
+__version__ = '0.0.1'
 __author__ = 'Stephen Bunn'
 __contact__ = 'stephen@bunn.io'
 __license__ = 'MIT License'
