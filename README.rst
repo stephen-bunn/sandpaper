@@ -7,6 +7,14 @@ Simplified table data normalization.
    :target: http://sandpaper.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
+.. image:: https://travis-ci.org/stephen-bunn/sandpaper.svg?branch=master
+   :target: https://travis-ci.org/stephen-bunn/sandpaper
+   :alt: Build Status
+
+.. image:: https://codecov.io/gh/stephen-bunn/sandpaper/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/stephen-bunn/sandpaper
+   :alt: Code Coverage
+
 
 Basic Usage
 -----------
