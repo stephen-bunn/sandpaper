@@ -14,22 +14,13 @@ Hopefully I'll continue to contribute rules, features, and more clean functional
 
 Installation
 ------------
-Currently SandPaper is not present on `PyPi <https://pypi.org>`_, but it's super easy to install from the git repo!
-Assuming you have `pip <https://pypi.python.org/pypi/pip>`_ (or **even better** `pipenv <https://docs.pipenv.org>`_) installed, you can install SandPaper using the following snippets.
+Currently SandPaper is on `PyPi <https://pypi.python.org/pypi/sandpaper/>`_ and can easily be installed through `pip <https://pypi.python.org/pypi/pip>`_!
 
 .. code-block:: bash
 
-   # if using pip
-   pip install -e git+https://github.com/stephen-bunn/sandpaper.git
-   # if using pipenv
-   pipenv install -e git+https://github.com/stephen-bunn/sandpaper.git
+   pip install sandpaper
 
 
-Now that you have the package installed, you will have to run the ``setup.py`` script.
-
-.. code-block:: bash
-
-   python setup.py
 
 .. _getting_started-usage:
 
