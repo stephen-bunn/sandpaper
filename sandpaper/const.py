@@ -18,19 +18,6 @@ class _const(object):
     __module_contact = 'stephen@bunn.io'
     __module_contributors = tuple()
     __module_license = 'MIT License'
-    __module_classifiers = (
-        'Development Status :: 2 - Pre-Alpha',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'License :: OSI Approved :: MIT License',
-        'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
-        'Operating System :: POSIX',
-        'Operating System :: MacOS :: MacOS X',
-        'Natural Language :: English',
-        'Topic :: Software Development :: Pre-processors',
-        'Topic :: Software Development :: Quality Assurance',
-    )
 
     @property
     def module_name(self):
@@ -101,16 +88,6 @@ class _const(object):
         """
 
         return self.__module_license
-
-    @property
-    def module_classifiers(self):
-        """ The classifiers of the module.
-
-        :getter: Returns the classifiers of the module
-        :setter: tuple(str)
-        """
-
-        return self.__module_classifiers
 
 
 sys.modules[__name__] = _const()
