@@ -10,6 +10,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 `0.0.1`_ (*unreleased*)
 -----------------------
 * added README formatting fixes for PyPi
+* fixed the PyPi configuration issues in setup.py
 
 
 `0.0.0`_ (*2017-10-24*)

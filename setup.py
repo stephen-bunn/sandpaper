@@ -9,10 +9,27 @@ import sys
 import shutil
 import setuptools
 
-from sandpaper import const
-
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
+REQUIRES = [
+    'six',
+    'futures',
+    'regex',
+    'path.py',
+    'braceexpand',
+    'pyexcel',
+    'pyexcel-io',
+    'pyexcel-xls',
+    'pyexcel-xlsx',
+    'psutil',
+    'dateparser',
+    'simplejson',
+]
+RELEASE = {}
+
+# NOTE: important dumb setup for complete segregation of module info
+with open(os.path.join(CURDIR, 'sandpaper', '__version__.py'), 'r') as fp:
+    exec(fp.read(), RELEASE)
 
 
 class UploadCommand(setuptools.Command):
@@ -44,38 +61,36 @@ class UploadCommand(setuptools.Command):
         os.system('twine upload dist/*')
 
         self.status('pushing git tags')
-        os.system(('git tag v{ver}').format(ver=const.module_version))
+        os.system(('git tag v{ver}').format(ver=RELEASE['__version__']))
         os.system('git push --tags')
 
         sys.exit()
 
 
 setuptools.setup(
-    name=const.module_name,
-    version=const.module_version,
-    description=const.module_description,
+    name=RELEASE['__name__'],
+    version=RELEASE['__version__'],
+    description=RELEASE['__description__'],
     long_description=open(os.path.join(CURDIR, 'README.rst'), 'r').read(),
-    license=const.module_license,
-    author=const.module_author,
-    author_email=const.module_contact,
+    license=RELEASE['__license__'],
+    author=RELEASE['__author__'],
+    author_email=RELEASE['__contact__'],
     url='https://github.com/stephen-bunn/sandpaper',
-    platforms='posix',
     include_package_data=True,
-    install_requires=list(
-        requirement.strip()
-        for requirement in open(
-            os.path.join(CURDIR, 'requirements.txt'),
-            'r'
-        ).readlines()
-    ),
-    packages=setuptools.find_packages(exclude=['tests', 'tests.rules']),
+    install_requires=REQUIRES,
+    packages=setuptools.find_packages(),
     keywords=[
         'normalization',
         'csv',
         'excel',
     ],
+    python_requires='>=2.7',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
