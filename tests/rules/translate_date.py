@@ -43,7 +43,8 @@ class TranslateDateRuleTest(BaseRuleTest):
             from_formats=['%Y-%m-%d', '%Y-%m'],
             to_format="year: %Y | month: %m",
             column_filter=r'name|value',
-            callable_filter=self._application_filter
+            value_filter=r'(?:2017|1994).*',
+            callable_filter=self._application_filter,
         )
         applied = self.paper.apply(self._get_static_glob(post=False))
         self.assertIsInstance(applied, types.GeneratorType)

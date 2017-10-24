@@ -41,6 +41,7 @@ class SandPaperTest(unittest.TestCase):
         self.assertIsInstance(self.named_paper.record_rules, list)
         self.assertEqual(self.named_paper.record_rules, [])
         self.assertNotEqual(self.named_paper.name, self.named_paper.uid)
+        self.assertIsInstance(self.named_paper.__repr__(), six.string_types)
 
         # test blank initialization
         self.assertIsInstance(self.blank_paper.name, six.string_types)
@@ -52,6 +53,7 @@ class SandPaperTest(unittest.TestCase):
         self.assertIsInstance(self.blank_paper.record_rules, list)
         self.assertEqual(self.blank_paper.record_rules, [])
         self.assertEqual(self.blank_paper.name, self.blank_paper.uid)
+        self.assertIsInstance(self.blank_paper.__repr__(), six.string_types)
 
     def test_equality(self):
         """ Test instance equality.
@@ -59,6 +61,10 @@ class SandPaperTest(unittest.TestCase):
 
         # instances without rules are equal (regardless of names)
         self.assertEqual(self.named_paper, self.blank_paper)
+        self.assertNotEqual(
+            self.named_paper.__repr__(),
+            self.blank_paper.__repr__()
+        )
 
         # instances with different value rules are not the same
         self.named_paper.lower()
@@ -67,11 +73,19 @@ class SandPaperTest(unittest.TestCase):
         # same value rules mean instances are the same
         self.blank_paper.lower()
         self.assertEqual(self.named_paper, self.blank_paper)
+        self.assertNotEqual(
+            self.named_paper.__repr__(),
+            self.blank_paper.__repr__()
+        )
 
         # validate value rule removal
         del self.named_paper.value_rules[:]
         del self.blank_paper.value_rules[:]
         self.assertEqual(self.named_paper, self.blank_paper)
+        self.assertNotEqual(
+            self.named_paper.__repr__(),
+            self.blank_paper.__repr__()
+        )
 
         # different record rules mean instances are different
         self.named_paper.add_column(column_name='test', column_value='test')
@@ -80,11 +94,19 @@ class SandPaperTest(unittest.TestCase):
         # same record rules man instances are equal
         self.blank_paper.add_column(column_name='test', column_value='test')
         self.assertEqual(self.named_paper, self.blank_paper)
+        self.assertNotEqual(
+            self.named_paper.__repr__(),
+            self.blank_paper.__repr__()
+        )
 
         # validate record rule removal
         del self.named_paper.record_rules[:]
         del self.blank_paper.record_rules[:]
         self.assertEqual(self.named_paper, self.blank_paper)
+        self.assertNotEqual(
+            self.named_paper.__repr__(),
+            self.blank_paper.__repr__()
+        )
 
     def test_serialization(self):
         """ Tests instance exporting and loading.

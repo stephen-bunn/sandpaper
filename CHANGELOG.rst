@@ -9,6 +9,8 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 `0.0.2`_ (*unreleased*)
 -----------------------
 * adding even more badges to the README
+* adding documentation improvements (linking rules to function references)
+* adding several small improvements to the tests (better code coverage)
 
 
 `0.0.1`_ (*2017-10-24*)
