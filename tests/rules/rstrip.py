@@ -7,8 +7,8 @@
 from ._common import BaseRuleTest
 
 
-class LowerRuleTest(BaseRuleTest):
-    """ Tests the ``lower`` rule.
+class RstripRuleTest(BaseRuleTest):
+    """ Tests the ``rstrip`` rule.
     """
 
     @property
@@ -16,7 +16,7 @@ class LowerRuleTest(BaseRuleTest):
         """ The name of the rule.
         """
 
-        return 'lower'
+        return 'rstrip'
 
     @property
     def rule_group(self):

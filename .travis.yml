@@ -1,0 +1,17 @@
+sudo: false
+language: python
+python:
+  - 3.5
+  - 3.6
+install:
+  - pip install pipenv
+  - pipenv install --dev
+  - pipenv run pip install codecov
+script:
+  - nosetests --with-coverage
+after_success:
+  - codecov
+notifications:
+  email:
+    on_success: never
+    on_failure: always

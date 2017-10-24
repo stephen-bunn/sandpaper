@@ -1,0 +1,9 @@
+[run]
+branch=True
+include=
+    sandpaper/*
+
+[report]
+show_missing=True
+omit=
+    */_common.py
