@@ -1,8 +1,10 @@
+=========
 SandPaper
 =========
 
 Simplified table data normalization.
 
+|
 
 .. image:: https://readthedocs.org/projects/sandpaper/badge/?version=latest
    :target: http://sandpaper.readthedocs.io/en/latest/?badge=latest
