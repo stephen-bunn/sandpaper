@@ -20,7 +20,8 @@ class _const(object):
     __module_license = 'MIT License'
     __module_classifiers = (
         'Development Status :: 2 - Pre-Alpha',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
