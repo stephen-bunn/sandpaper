@@ -6,4 +6,5 @@ include=
 [report]
 show_missing=True
 omit=
+    sandpaper/const.py
     */_common.py
