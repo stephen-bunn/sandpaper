@@ -38,7 +38,7 @@ class UploadCommand(setuptools.Command):
             pass
 
         self.status('building distribution')
-        os.system(('{sys.executable} setup.py sdist').format(**locals()))
+        os.system(('{exe} setup.py sdist').format(exe=sys.executable))
 
         self.status('uploading distribution')
         os.system('twine upload dist/*')
