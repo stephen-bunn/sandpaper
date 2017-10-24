@@ -9,5 +9,12 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 
 `0.0.1`_ (*unreleased*)
 -----------------------
+* added README formatting fixes for PyPi
+
+
+`0.0.0`_ (*2017-10-24*)
+-----------------------
 * added the project's base structure (wish i could include change logs for prior structure updates)
 * fixed the project's base structure for PY2 compatability
+
+.. _0.0.0: https://github.com/stephen-bunn/releases/tag/v0.0.0
