@@ -15,6 +15,10 @@ Simplified table data normalization.
    :target: https://codecov.io/gh/stephen-bunn/sandpaper
    :alt: Code Coverage
 
+.. image:: https://requires.io/github/stephen-bunn/sandpaper/requirements.svg?branch=master
+   :target: https://requires.io/github/stephen-bunn/sandpaper/requirements/?branch=master
+   :alt: Requirements Status
+
 
 Basic Usage
 -----------
