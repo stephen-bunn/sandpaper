@@ -17,4 +17,6 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 * added the project's base structure (wish i could include change logs for prior structure updates)
 * fixed the project's base structure for PY2 compatability
 
-.. _0.0.0: https://github.com/stephen-bunn/releases/tag/v0.0.0
+
+.. _0.0.1: https://github.com/stephen-bunn/sandpaper/
+.. _0.0.0: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.0
