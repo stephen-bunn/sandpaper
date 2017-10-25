@@ -79,6 +79,7 @@ class SandPaper(object):
         :param str name: The descriptive name of the SandPaper object
         """
 
+        # TODO: find a way to provide better handling for data offsets
         if name is not None:
             self.name = name
 
@@ -561,6 +562,7 @@ class SandPaper(object):
         :returns: The value potentially translated value
         """
 
+        # FIXME: find a better name than `from_regex`, its too unique
         value = record[column]
         match = regex.match(from_regex, str(value))
         if match is not None:
@@ -659,6 +661,7 @@ class SandPaper(object):
         :returns: The record with a potential newly added column
         """
 
+        # TODO: add the ability to specify index in the record to add column to
         # column already exists, completely ignore adding it
         if column_name in record:
             return record
