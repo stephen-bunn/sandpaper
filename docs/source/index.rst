@@ -51,6 +51,7 @@ Documentation
 
    getting-started
    available-rules
+   changelog
 
 
 .. toctree::
