@@ -34,6 +34,10 @@ SandPaper
    :target: https://requires.io/github/stephen-bunn/sandpaper/requirements/?branch=master
    :alt: Requirements Status
 
+.. image:: https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg
+   :target: https://saythanks.io/to/stephen-bunn
+   :alt: Say Thanks
+
 
 Documentation
 =============
