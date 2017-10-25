@@ -3,7 +3,7 @@ SandPaper
 =========
 
 .. image:: https://badge.fury.io/py/sandpaper.svg
-   :target: https://badge.fury.io/py/sandpaper
+   :target: https://pypi.org/project/sandpaper/
    :alt: PyPi Status
 
 .. image:: https://img.shields.io/github/tag/stephen-bunn/sandpaper.svg
@@ -13,6 +13,10 @@ SandPaper
 .. image:: https://img.shields.io/pypi/pyversions/sandpaper.svg
    :target: https://pypi.org/project/sandpaper/
    :alt: Supported Versions
+
+.. image:: https://img.shields.io/pypi/status/sandpaper.svg
+   :target: https://pypi.org/project/sandpaper/
+   :alt: Release Status
 
 .. image:: https://img.shields.io/github/license/stephen-bunn/sandpaper.svg
    :target: https://github.com/stephen-bunn/sandpaper/blob/master/LICENSE
