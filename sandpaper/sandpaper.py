@@ -765,6 +765,8 @@ class SandPaper(object):
         :rtype: dict
         """
 
+        # TODO: find a better way of handling this
+        # also requires updates in `load`
         return {
             'name': self.name,
             'rules': {
