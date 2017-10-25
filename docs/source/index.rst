@@ -2,7 +2,7 @@
 SandPaper
 =========
 
-.. image:: https://badge.fury.io/py/sandpaper.svg
+.. image:: https://img.shields.io/pypi/v/sandpaper.svg
    :target: https://pypi.org/project/sandpaper/
    :alt: PyPi Status
 
