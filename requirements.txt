@@ -10,3 +10,6 @@ dateparser
 simplejson
 pyexcel-xlsx
 pyexcel-io
+
+# NOTE: required for readthedocs.io
+flask-sphinx-themes
