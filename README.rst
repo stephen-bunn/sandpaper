@@ -69,6 +69,6 @@ Learn more by reading the `documentation <https://sandpaper.readthedocs.io/en/la
         to_format='%c'
     )
 
-    for result in s.apply('~/Downloads/exported_data.{1..3}.{csv,xls{,x}}'):
+    for result in paper.apply('~/random_data.{1..3}.{csv,xls{,x}}'):
         # apply sandpaper rules to all files matching the brace expanded glob given
         print(result)

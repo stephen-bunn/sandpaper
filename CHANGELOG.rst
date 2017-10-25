@@ -6,8 +6,15 @@ All notable changes to `SandPaper <https://github.com/stephen-bunn/sandpaper/>`_
 
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
-`0.0.3`_ (*unreleased*)
+`0.0.4`_ (*unreleased*)
 -----------------------
+
+
+`0.0.3`_ (*2017-10-24*)
+-----------------------
+* adding more badges to documentation and the README
+* fixing (hopefully) the building of documentation for readthedocs.io
+* fixing README example with an example that acutally makes sense
 
 
 `0.0.2`_ (*2017-10-24*)
@@ -29,7 +36,8 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 * fixed the project's base structure for PY2 compatability
 
 
-.. _0.0.3: https://github.com/stephen-bunn/sandpaper/
+.. _0.0.4: https://github.com/stephen-bunn/sandpaper/
+.. _0.0.3: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.3
 .. _0.0.2: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.2
 .. _0.0.1: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.1
 .. _0.0.0: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.0
