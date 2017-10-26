@@ -121,6 +121,9 @@ Rule Filters
 
 An important thing to note about rules is that every value has to first pass several optional filters if the rule is to be applied to that value.
 
+   ``sheet_filter`` : regex
+      A regular expression filter applied to the sheet name (*must have a match to pass*)
+
    ``column_filter`` : regex
       A regular expression filter applied to the column name of the value (*must have a match to pass*)
 

@@ -8,6 +8,7 @@ import os
 import hashlib
 import warnings
 import functools
+import collections
 
 from . import (utils,)
 
@@ -213,13 +214,40 @@ class SandPaper(object):
             '{base_path}.sanded{base_ext}'
         ).format(**locals())
 
-    def _filter_allowed(
-        self, record,
-        column_filter=None, value_filter=None, callable_filter=None,
+    def _filter_records(
+        self, sheet_name, record,
+        sheet_filter=None,
         **kwargs
     ):
-        """ Yield only allowed (column, value) pairs using filters.
+        """ Yield only allowed records using supported filters.
 
+        :param str sheet_name: The name of the sheet
+        :param collections.OrderedDict record: An ordered dictionary of
+            (``column_name``, ``row_value``) items
+        :param str sheet_filter: A matched regular expression for
+            ``sheet_name``
+        :param dict kwargs: Any named arguments
+        :returns: A generator yielding allowed records
+        """
+
+        if isinstance(sheet_filter, six.string_types):
+            sheet_filter = regex.compile(sheet_filter)
+
+        if sheet_filter is not None:
+            if not sheet_filter.match(sheet_name):
+                return
+
+        yield record
+
+    def _filter_values(
+        self, sheet_name, record,
+        sheet_filter=None, column_filter=None, value_filter=None,
+        callable_filter=None,
+        **kwargs
+    ):
+        """ Yield only allowed (column, value) pairs using supported filters.
+
+        :param str sheet_name: The name of the sheet
         :param collections.OrderedDict record: An ordered dictionary of
             (``column_name``, ``row_value``) items
         :param str column_filter: A matched regular expression for
@@ -231,10 +259,16 @@ class SandPaper(object):
         :returns: A generator yielding allowed (column, value) pairs
         """
 
+        if isinstance(sheet_filter, six.string_types):
+            sheet_filter = regex.compile(sheet_filter)
         if isinstance(column_filter, six.string_types):
             column_filter = regex.compile(column_filter)
         if isinstance(value_filter, six.string_types):
             value_filter = regex.compile(value_filter)
+
+        if sheet_filter is not None:
+            if not sheet_filter.match(sheet_name):
+                return
 
         for (column, value) in record.items():
 
@@ -258,23 +292,47 @@ class SandPaper(object):
         :returns: Yields normalized records
         """
 
-        for record in pyexcel.iget_records(
-            file_name=from_file,
-            **kwargs
-        ):
-            # apply filtered value rules
-            for (rule, rule_kwargs,) in self.value_rules:
-                for (column, value,) in self._filter_allowed(
-                    record,
-                    **rule_kwargs
-                ):
-                    record[column] = \
-                        rule(self, record.copy(), column, **rule_kwargs)
-            # apply table rules
-            for (rule, rule_kwargs,) in self.record_rules:
-                record = rule(self, record.copy(), **rule_kwargs)
+        source_book = pyexcel.get_book(file_name=from_file)
+        target_sheets = collections.OrderedDict()
 
-            yield record
+        for sheet_name in source_book.sheet_names():
+            sheet_records = []
+            for record in pyexcel.iget_records(
+                file_name=from_file,
+                sheet_name=sheet_name,
+                **kwargs
+            ):
+                for (rule, rule_kwargs,) in self.value_rules:
+                    for (column, value,) in self._filter_values(
+                        sheet_name, record,
+                        **rule_kwargs
+                    ):
+                        # value rules are implicitly passed a copy of the
+                        # record and the allowed columns as filtered by
+                        # _filter_values
+                        record[column] = \
+                            rule(self, record.copy(), column, **rule_kwargs)
+                for (rule, rule_kwargs,) in self.record_rules:
+                    for allowed_record in self._filter_records(
+                        sheet_name, record,
+                        **rule_kwargs
+                    ):
+                        # record rules are only implicitly passed a copy of
+                        # the allowed records as filtered by _filter_records
+                        record = \
+                            rule(self, allowed_record.copy(), **rule_kwargs)
+                sheet_records.append(record)
+
+            # build 2D array from processed records, this is pyexcel's fault
+            # for lacking full support for all their reading formats
+            record_array = [[]]
+            for record in sheet_records:
+                if len(record.keys()) > len(record_array[0]):
+                    record_array[0] = list(record.keys())
+                record_array.append(list(record.values()))
+
+            target_sheets[sheet_name] = record_array
+        return pyexcel.Book(sheets=target_sheets)
 
     def _apply_to(self, from_file, to_file, **kwargs):
         """ Threadable rule processing method.
@@ -290,11 +348,9 @@ class SandPaper(object):
         :rtype: str
         """
 
-        pyexcel.isave_as(
-            records=self._apply_rules(from_file, **kwargs),
-            dest_file_name=to_file,
-            with_keys=False,
-            dest_lineterminator=os.linesep
+        self._apply_rules(from_file, **kwargs).save_as(
+            to_file,
+            lineterminator=os.linesep
         )
         return to_file
 
@@ -723,6 +779,8 @@ class SandPaper(object):
             parallel
         :param callable name_generator: A callable that
             generates output filepaths given the path.Path instance
+        :param dict kwargs: Any additional named arguments
+            (applied to the pyexcel ``iget_records`` method)
         :returns: Yields output filepaths (not in any consistent order)
         """
         # TODO: add file metainfo to the kwargs
