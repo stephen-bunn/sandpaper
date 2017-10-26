@@ -765,21 +765,13 @@ class SandPaper(object):
         :rtype: dict
         """
 
-        # TODO: find a better way of handling this
-        # also requires updates in `load`
-        return {
-            'name': self.name,
-            'rules': {
-                'record': [
-                    (rule.__name__, rule_kwargs)
-                    for (rule, rule_kwargs,) in self.record_rules
-                ],
-                'value': [
-                    (rule.__name__, rule_kwargs)
-                    for (rule, rule_kwargs,) in self.value_rules
-                ]
-            }
-        }
+        serial = {'name': self.name, 'rules': {}}
+        for rule_group in ('value_rules', 'record_rules',):
+            serial['rules'][rule_group] = [
+                (rule.__name__, rule_kwargs,)
+                for (rule, rule_kwargs,) in getattr(self, rule_group)
+            ]
+        return serial
 
     @classmethod
     def load(cls, serialization):
@@ -791,12 +783,11 @@ class SandPaper(object):
         """
 
         instance = cls(serialization['name'])
-        instance.value_rules.extend([
-            (getattr(instance, rule_name), rule_kwargs,)
-            for (rule_name, rule_kwargs) in serialization['rules']['value']
-        ])
-        instance.record_rules.extend([
-            (getattr(instance, rule_name), rule_kwargs,)
-            for (rule_name, rule_kwargs) in serialization['rules']['record']
-        ])
+        for rule_group in ('value_rules', 'record_rules',):
+            getattr(instance, rule_group).extend([
+                (getattr(instance, rule_name), rule_kwargs,)
+                for (rule_name, rule_kwargs,) in serialization[
+                    'rules'
+                ][rule_group]
+            ])
         return instance
