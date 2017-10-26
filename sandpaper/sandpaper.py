@@ -67,6 +67,9 @@ class SandPaper(object):
         data files such as ``.csv``, ``.xls``, and ``.xlsx``.
     """
 
+    __available_filters = (
+        'sheet_filter', 'column_filter', 'value_filter', 'callable_filter',
+    )
     __default_apply = {
         'auto_detect_datetime': False
     }
@@ -230,9 +233,6 @@ class SandPaper(object):
         :returns: A generator yielding allowed records
         """
 
-        if isinstance(sheet_filter, six.string_types):
-            sheet_filter = regex.compile(sheet_filter)
-
         if sheet_filter is not None:
             if not sheet_filter.match(sheet_name):
                 return
@@ -258,13 +258,6 @@ class SandPaper(object):
             ``callable_filter``
         :returns: A generator yielding allowed (column, value) pairs
         """
-
-        if isinstance(sheet_filter, six.string_types):
-            sheet_filter = regex.compile(sheet_filter)
-        if isinstance(column_filter, six.string_types):
-            column_filter = regex.compile(column_filter)
-        if isinstance(value_filter, six.string_types):
-            value_filter = regex.compile(value_filter)
 
         if sheet_filter is not None:
             if not sheet_filter.match(sheet_name):
@@ -302,6 +295,7 @@ class SandPaper(object):
                 sheet_name=sheet_name,
                 **kwargs
             ):
+                # handle defined value rules
                 for (rule, rule_kwargs,) in self.value_rules:
                     for (column, value,) in self._filter_values(
                         sheet_name, record,
@@ -312,6 +306,7 @@ class SandPaper(object):
                         # _filter_values
                         record[column] = \
                             rule(self, record.copy(), column, **rule_kwargs)
+                # handle defined record rules
                 for (rule, rule_kwargs,) in self.record_rules:
                     for allowed_record in self._filter_records(
                         sheet_name, record,
@@ -785,6 +780,14 @@ class SandPaper(object):
         """
         # TODO: add file metainfo to the kwargs
         from_glob = path.Path(from_glob).expand().abspath().normpath()
+
+        # precompile filter regexes (kinda speeds up the processing)
+        for (rule, rule_kwargs,) in (self.value_rules + self.record_rules):
+            for (key, value,) in rule_kwargs.items():
+                if key in self.__available_filters and \
+                        isinstance(value, six.string_types):
+                    rule_kwargs[key] = regex.compile(value)
+
         futures = []
         try:
             # build a thread pool for processing files in parallel

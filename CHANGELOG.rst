@@ -10,6 +10,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 -----------------------
 * adding a better badge provider for PyPi package status
 * adding support for a ``sheet_filter`` applied to both value rules and record rules
+* adding precompilation of filter regexes before application
 
 
 `0.0.3`_ (*2017-10-25*)
