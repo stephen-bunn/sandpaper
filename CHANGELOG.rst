@@ -6,7 +6,11 @@ All notable changes to `SandPaper <https://github.com/stephen-bunn/sandpaper/>`_
 
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
-`0.0.4`_ (*unreleased*)
+*unreleased*
+------------
+
+
+`0.0.4`_ (*2017-10-26*)
 -----------------------
 * added a better badge provider for PyPi package status
 * added support for a ``sheet_filter`` applied to both value rules and record rules
@@ -41,7 +45,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 * fixed the project's base structure for PY2 compatability
 
 
-.. _0.0.4: https://github.com/stephen-bunn/sandpaper/
+.. _0.0.4: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.4
 .. _0.0.3: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.3
 .. _0.0.2: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.2
 .. _0.0.1: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.1
