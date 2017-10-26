@@ -8,23 +8,25 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 
 `0.0.4`_ (*unreleased*)
 -----------------------
-* adding a better badge provider for PyPi package status
-* adding support for a ``sheet_filter`` applied to both value rules and record rules
-* adding precompilation of filter regexes before application
+* added a better badge provider for PyPi package status
+* added support for a ``sheet_filter`` applied to both value rules and record rules
+* added precompilation of filter regexes before application
+* added rule application statistics which is now returned from ``apply`` in a tuple (output_filepath, output_statistics,)
+* removed callable filters causing exporting and loading errors (just ignoring callable filters for now)
 
 
 `0.0.3`_ (*2017-10-25*)
 -----------------------
-* adding more badges to documentation and the README
-* fixing (hopefully) the building of documentation for readthedocs.io
-* fixing README example with an example that acutally makes sense
+* added more badges to documentation and the README
+* fixed (hopefully) the building of documentation for readthedocs.io
+* fixed README example with an example that acutally makes sense
 
 
 `0.0.2`_ (*2017-10-24*)
 -----------------------
-* adding even more badges to the README
-* adding documentation improvements (linking rules to function references)
-* adding several small improvements to the tests (better code coverage)
+* added even more badges to the README
+* added documentation improvements (linking rules to function references)
+* added several small improvements to the tests (better code coverage)
 
 
 `0.0.1`_ (*2017-10-24*)

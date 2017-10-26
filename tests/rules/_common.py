@@ -112,8 +112,9 @@ class BaseRuleTest(six.with_metaclass(abc.ABCMeta, unittest.TestCase)):
             sandpaper.utils.fancy_glob(self._get_static_glob(post=True)),
             applied
         ):
-            print((evaluation, processed,))
+            print((evaluation, processed[0],))
             self.assertEqual(
                 self._get_file_hash(evaluation),
-                self._get_file_hash(processed)
+                self._get_file_hash(processed[0])
             )
+            self.assertIsInstance(processed[-1], dict)

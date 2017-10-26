@@ -194,7 +194,8 @@ Input      Output
 Record Rules
 ------------
 
-These rules are applied to every record regardless of rule filters documented in :ref:`getting_started-rule-filters`.
+These rules are applied to every record regardless to most rule filters documented in :ref:`getting_started-rule-filters`.
+The only filter that applies to record rules is the ``sheet_filter`` rule.
 
 :func:`~sandpaper.sandpaper.SandPaper.add_column`
 '''''''''''''''''''''''''''''''''''''''''''''''''

@@ -285,10 +285,13 @@ class SandPaper(object):
         :returns: Yields normalized records
         """
 
+        statistics = {}
         source_book = pyexcel.get_book(file_name=from_file)
         target_sheets = collections.OrderedDict()
 
         for sheet_name in source_book.sheet_names():
+            if sheet_name not in statistics:
+                statistics[sheet_name] = {}
             sheet_records = []
             for record in pyexcel.iget_records(
                 file_name=from_file,
@@ -301,6 +304,9 @@ class SandPaper(object):
                         sheet_name, record,
                         **rule_kwargs
                     ):
+                        if rule.__name__ not in statistics[sheet_name]:
+                            statistics[sheet_name][rule.__name__] = 0
+                        statistics[sheet_name][rule.__name__] += 1
                         # value rules are implicitly passed a copy of the
                         # record and the allowed columns as filtered by
                         # _filter_values
@@ -312,6 +318,9 @@ class SandPaper(object):
                         sheet_name, record,
                         **rule_kwargs
                     ):
+                        if rule.__name__ not in statistics[sheet_name]:
+                            statistics[sheet_name][rule.__name__] = 0
+                        statistics[sheet_name][rule.__name__] += 1
                         # record rules are only implicitly passed a copy of
                         # the allowed records as filtered by _filter_records
                         record = \
@@ -327,7 +336,7 @@ class SandPaper(object):
                 record_array.append(list(record.values()))
 
             target_sheets[sheet_name] = record_array
-        return pyexcel.Book(sheets=target_sheets)
+        return (pyexcel.Book(sheets=target_sheets), statistics,)
 
     def _apply_to(self, from_file, to_file, **kwargs):
         """ Threadable rule processing method.
@@ -343,11 +352,12 @@ class SandPaper(object):
         :rtype: str
         """
 
-        self._apply_rules(from_file, **kwargs).save_as(
+        (book, statistics,) = self._apply_rules(from_file, **kwargs)
+        book.save_as(
             to_file,
             lineterminator=os.linesep
         )
-        return to_file
+        return (to_file, statistics,)
 
     @value_rule
     def lower(self, record, column, **kwargs):
@@ -822,14 +832,25 @@ class SandPaper(object):
     def export(self):
         """ Exports a serialization of the active rules.
 
+        .. note:: Currently the exported serialization does not include
+            callable filters.
+            So, if your normalization tasks rely on them, it is currently
+            suggested to simply store the initialization of the SandPaper
+            instance instead of trying to load them from a serialized export.
+
         :returns: the serialization dict
         :rtype: dict
         """
 
         serial = {'name': self.name, 'rules': {}}
         for rule_group in ('value_rules', 'record_rules',):
+            # NOTE: The current serialization excludes callable kwarg_values
             serial['rules'][rule_group] = [
-                (rule.__name__, rule_kwargs,)
+                (rule.__name__, {
+                    kwarg_name: kwarg_value
+                    for (kwarg_name, kwarg_value) in rule_kwargs.items()
+                    if not callable(kwarg_value)
+                },)
                 for (rule, rule_kwargs,) in getattr(self, rule_group)
             ]
         return serial

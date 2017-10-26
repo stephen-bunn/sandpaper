@@ -80,8 +80,8 @@ The current state of the ``my_sandpaper`` instance could have also been initiali
 
 .. code-block:: python
 
-   my_sandpaper = SandPaper('my-sandpaper')
-      .strip()
+   my_sandpaper = SandPaper('my-sandpaper')\
+      .strip()\
       .substitute(
          substitutes={
             r'FL': 'Florida',
@@ -107,7 +107,9 @@ In this instance the whitespace stripping will be applied to all ``.csv`` files 
 
 .. code-block:: python
 
-   for output_filepath in my_sandpaper.apply('~/data_*{01..99}.csv'):
+   for (output_filepath, output_statistics) in my_sandpaper.apply(
+      '~/data_*{01..99}.csv'
+   ):
       print(output_filepath)
 
 
