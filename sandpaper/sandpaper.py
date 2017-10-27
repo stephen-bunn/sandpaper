@@ -693,7 +693,8 @@ class SandPaper(object):
         value = record[column]
         parsed_date = dateparser.parse(
             str(value),
-            date_formats=from_formats
+            date_formats=from_formats,
+            settings={'STRICT_PARSING': True}
         )
         if parsed_date is not None:
             return parsed_date.strftime(to_format)

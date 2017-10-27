@@ -162,6 +162,9 @@ This exported format can be used to bootstrap a new :class:`~sandpaper.sandpaper
     new_sandpaper = SandPaper.load(serialized)
 
 
+
+.. _getting_started-be-explicit:
+
 Be Explicit
 -----------
 
@@ -197,3 +200,50 @@ However, when the user tries to apply the :class:`~sandpaper.sandpaper.SandPaper
 This is due to how the ``substitutes`` are stored as ``kwargs`` rather than ``args`` to the ``substitute`` function.
 
 **TLDR:** *Be explicit with the parameters of all rules!*
+
+
+.. _getting_started-limitations:
+
+Limitations
+-----------
+
+Several limitations to the effectiveness of the reading and writing of normalized data still exist within this module.
+These are described in the subsections below...
+
+
+.. _getting_started-reading-as-records:
+
+Reading as Records
+''''''''''''''''''
+
+In order to provide all of the lovely filtering (:ref:`getting_started-rule-filters`) that make specifying advanced normalization rules much easier, SandPaper reads rows of table type data in as records (:class:`collections.OrderedDict`).
+This allows us to tie row entries to column names easily but unfortunately causes limitations on the format of data that can be properly read in.
+The main limitation is that **table sheets with duplicate column names cannot be read properly**.
+
+Because `pyexcel <https://pyexcel.readthedocs.io/en/latest/>`_ reads records as :class:`~collections.OrderedDict`, the last column with a duplicate name is the only column considered.
+
+For example the following table data...
+
+========= =========
+my_column my_column
+========= =========
+1         2
+3         4
+========= =========
+
+will only output the last ``my_column`` column (with values 2 and 4) in the resulting ``sanded`` data.
+This is because the reading of the record first reads the first column and then overwrites it with the second column.
+
+A fix for this issue is possible, however would cause a lot of refactoring and additional testing which (obviously) has not been done.
+
+
+.. _getting_started-translating-dates:
+
+Translating Dates
+'''''''''''''''''
+
+The :func:`~sandpaper.sandpaper.SandPaper.translate_date` rule is quite nifty, but also has a couple limitations that need to be considered.
+We utilize the clever `dateparser <https://dateparser.readthedocs.io/en/latest/>`_ library to handle date parsing which can be greedy at times.
+In order to counteract this greediness we specify the ``STRICT_PARSING`` setting in order to limit the format matching to only those provided to the :func:`~sandpaper.sandpaper.SandPaper.translate_date` rule.
+
+However, because this parsing takes a considerable amount of time (when executed for many many items) it is recommended to also specify at least a ``column_filter`` for all instances of the rule.
