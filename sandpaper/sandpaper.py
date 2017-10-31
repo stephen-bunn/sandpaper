@@ -755,6 +755,32 @@ class SandPaper(object):
         del record[column_name]
         return record
 
+    @record_rule
+    def map_column(
+        self, record, from_column, to_column,
+        replace=False,
+        **kwargs
+    ):
+        """ Maps an existing column to a new column.
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param str from_column: The name of the column to remap
+        :param str to_column: The new name of the column to remap to
+        :param bool replace: Boolean which indicates if original column
+            should be removed
+        :param dict kwargs: Any named arguments
+        :returns: The record with the remapped column
+        """
+
+        if from_column not in record:
+            return record
+
+        record[to_column] = record[from_column]
+        if replace:
+            del record[from_column]
+        return record
+
     def apply(
         self, from_glob,
         max_workers=None, name_generator=None,
