@@ -13,7 +13,6 @@ import collections
 import six
 import regex
 import arrow
-import psutil
 import pyexcel
 
 
@@ -31,7 +30,7 @@ def value_rule(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        self.value_rules.append(func)
+        self.value_rules.add(func)
         self.rules.append((func, args, kwargs,))
         return self
 
@@ -52,7 +51,7 @@ def record_rule(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        self.record_rules.append(func)
+        self.record_rules.add(func)
         self.rules.append((func, args, kwargs,))
         return self
 
@@ -165,6 +164,12 @@ class SandPaper(object):
 
     @property
     def rules(self):
+        """ This list of applicable rules for the SandPaper instance.
+
+        :getter: Returns the list of applicable rules for the instance
+        :rtype: list[tuple(callable, tuple(....,....), dict[str,....])]
+        """
+
         if not hasattr(self, '_rules'):
             self._rules = []
         return self._rules
@@ -173,41 +178,25 @@ class SandPaper(object):
     def value_rules(self):
         """ The set of value rules for the SandPaper instance.
 
-        A list of tuples (rule_name, rule_arguments)
-
         :getter: Returns the set rules for the SandPaper instance
-        :rtype: list[tuple(str, dict[str,....])]
+        :rtype: set(callable)
         """
 
         if not hasattr(self, '_value_rules'):
-            self._value_rules = []
+            self._value_rules = set()
         return self._value_rules
 
     @property
     def record_rules(self):
-        """ The set of table rules for the SandPaper instance.
-
-        A list of tuples (rule_name, rule_arguments)
+        """ The set of record rules for the SandPaper instance.
 
         :getter: Returns the set rules for the SandPaper instance
-        :rtype: list[tuple(str, dict[str,....])]
+        :rtype: set(callable)
         """
 
         if not hasattr(self, '_record_rules'):
-            self._record_rules = []
+            self._record_rules = set()
         return self._record_rules
-
-    @property
-    def default_workers(self):
-        """ The default amount of workers to use for processing multiple files.
-
-        The current count of cpus as determined by ``psutil.cpu_count()``
-
-        :getter: Returns the default amount of workers
-        :rtype: int
-        """
-
-        return psutil.cpu_count()
 
     def _filter_values(
         self, record,
@@ -216,7 +205,6 @@ class SandPaper(object):
     ):
         """ Yield only allowed (column, value) pairs using supported filters.
 
-        :param str sheet_name: The name of the sheet
         :param collections.OrderedDict record: An ordered dictionary of
             (``column_name``, ``row_value``) items
         :param str column_filter: A matched regular expression for
@@ -244,12 +232,13 @@ class SandPaper(object):
 
     def _apply_rules(
         self, from_file,
-        sheet_name=None, progress_hook=None,
+        sheet_name=None,
         **kwargs
     ):
         """ Base rule application method.
 
         :param str from_file: The file to apply rules to
+        :param str sheet_name: The name of the sheet to apply rules to
         :param dict kwargs: Any named arguments, for the reading of the file
         :returns: Yields normalized records
         """
@@ -259,19 +248,21 @@ class SandPaper(object):
             sheet_name=sheet_name,
             **kwargs
         ):
-            if callable(progress_hook):
-                progress_hook(record)
 
+            # start application of all registered rules
             for (rule, rule_args, rule_kwargs,) in self.rules:
                 if rule in self.value_rules:
+                    # value rules are  required to pass filtering
                     for (column, value,) in self._filter_values(
                         record, **rule_kwargs
                     ):
+                        # handle application of value rule
                         record[column] = rule(
                             self, record.copy(), column,
                             *rule_args, **rule_kwargs
                         )
                 else:
+                    # handle application of record rule
                     record = rule(
                         self, record.copy(),
                         *rule_args, **rule_kwargs
@@ -281,7 +272,7 @@ class SandPaper(object):
 
     def _apply_to(
         self, from_file, to_file,
-        sheet_name=None, progress_hook=None,
+        sheet_name=None,
         **kwargs
     ):
         """ Threadable rule processing method.
@@ -300,7 +291,7 @@ class SandPaper(object):
         pyexcel.isave_as(
             records=list(self._apply_rules(
                 from_file,
-                sheet_name=sheet_name, progress_hook=progress_hook,
+                sheet_name=sheet_name,
                 **kwargs
             )),
             dest_file_name=to_file,
@@ -505,47 +496,21 @@ class SandPaper(object):
         replacements,
         **kwargs
     ):
-        value = record[column]
-        if isinstance(value, six.string_types):
-            for (from_text, to_text,) in replacements.items():
-                value = value.replace(from_text, to_text)
-        return value
-
-    @value_rule
-    def substitute(
-        self, record, column,
-        substitutes,
-        **kwargs
-    ):
-        """ A substitution rule for a given value.
-
-        Take for example the following SandPaper instance:
-
-        .. code-block:: python
-
-            s = SandPaper('my-sandpaper').substitute(substitutes={
-                r'^\d+.*$': 'STARTED WITH A NUMBER'
-            })
-
-
-        This will substitute all values that start with a number with the
-        text ``STARTED WITH A NUMBER``.
+        """ Applies a replacements dictionary to a value.
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param substitutes: A dictionary of (regex, value,)
-            substitute items for the value
-        :type substitutes: dict[str, str]
+        :param dict[str, str] replacements: A dictionary of replacements
+            for the value
         :param dict kwargs: Any named arguments
-        :returns: The value potentially substituted by the substitutes
-            dictionary
+        :returns: The value with all replacements made
         """
 
         value = record[column]
-        for (from_regex, to_value) in substitutes.items():
-            if regex.match(from_regex, str(value)):
-                return to_value
+        if isinstance(value, six.string_types):
+            for (from_text, to_text,) in replacements.items():
+                value = value.replace(from_text, to_text)
         return value
 
     @value_rule
@@ -594,6 +559,7 @@ class SandPaper(object):
                 named_groups = kwargs.copy()
                 named_groups.update(match.groupdict())
 
+                # TODO: simplify the passing of arguments to this format
                 value = to_format.format(
                     *[
                         (capture if capture is not None else '')
