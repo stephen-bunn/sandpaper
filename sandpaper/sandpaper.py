@@ -6,18 +6,15 @@
 
 import os
 import hashlib
-import warnings
+import datetime
 import functools
 import collections
 
-from . import (utils,)
-
 import six
-import path
 import regex
+import arrow
 import psutil
 import pyexcel
-import concurrent.futures
 
 
 def value_rule(func):
@@ -34,7 +31,8 @@ def value_rule(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        self.value_rules.append((func, kwargs,))
+        self.value_rules.append(func)
+        self.rules.append((func, args, kwargs,))
         return self
 
     return wrapper
@@ -54,7 +52,8 @@ def record_rule(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        self.record_rules.append((func, kwargs,))
+        self.record_rules.append(func)
+        self.rules.append((func, args, kwargs,))
         return self
 
     return wrapper
@@ -68,10 +67,10 @@ class SandPaper(object):
     """
 
     __available_filters = (
-        'sheet_filter', 'column_filter', 'value_filter', 'callable_filter',
+        'column_filter', 'value_filter', 'callable_filter',
     )
     __default_apply = {
-        'auto_detect_datetime': False
+        'auto_detect_datetime': False,
     }
 
     def __init__(self, name=None):
@@ -158,11 +157,17 @@ class SandPaper(object):
         """
 
         hasher = hashlib.md5()
-        for (rule, rule_kwargs,) in (self.record_rules + self.value_rules):
+        for (rule, rule_args, rule_kwargs,) in self.rules:
             hasher.update((
-                '{rule.__name__}({rule_kwargs})'
+                '{rule.__name__}({rule_args}, {rule_kwargs})'
             ).format(**locals()).encode('utf-8'))
         return hasher.hexdigest()
+
+    @property
+    def rules(self):
+        if not hasattr(self, '_rules'):
+            self._rules = []
+        return self._rules
 
     @property
     def value_rules(self):
@@ -204,45 +209,9 @@ class SandPaper(object):
 
         return psutil.cpu_count()
 
-    def _generate_filename(self, file_path, **kwargs):
-        """ The default method for generating output filenames.
-
-        :param path.Path file_path: An input Path instance
-        :returns: A string filepath to save the processed results to
-        :rtype: str
-        """
-
-        (base_path, base_ext,) = file_path.splitext()
-        return (
-            '{base_path}.sanded{base_ext}'
-        ).format(**locals())
-
-    def _filter_records(
-        self, sheet_name, record,
-        sheet_filter=None,
-        **kwargs
-    ):
-        """ Yield only allowed records using supported filters.
-
-        :param str sheet_name: The name of the sheet
-        :param collections.OrderedDict record: An ordered dictionary of
-            (``column_name``, ``row_value``) items
-        :param str sheet_filter: A matched regular expression for
-            ``sheet_name``
-        :param dict kwargs: Any named arguments
-        :returns: A generator yielding allowed records
-        """
-
-        if sheet_filter is not None:
-            if not sheet_filter.match(sheet_name):
-                return
-
-        yield record
-
     def _filter_values(
-        self, sheet_name, record,
-        sheet_filter=None, column_filter=None, value_filter=None,
-        callable_filter=None,
+        self, record,
+        column_filter=None, value_filter=None, callable_filter=None,
         **kwargs
     ):
         """ Yield only allowed (column, value) pairs using supported filters.
@@ -259,10 +228,6 @@ class SandPaper(object):
         :returns: A generator yielding allowed (column, value) pairs
         """
 
-        if sheet_filter is not None:
-            if not sheet_filter.match(sheet_name):
-                return
-
         for (column, value) in record.items():
 
             if column_filter is not None:
@@ -277,7 +242,11 @@ class SandPaper(object):
 
             yield (column, value,)
 
-    def _apply_rules(self, from_file, **kwargs):
+    def _apply_rules(
+        self, from_file,
+        sheet_name=None, progress_hook=None,
+        **kwargs
+    ):
         """ Base rule application method.
 
         :param str from_file: The file to apply rules to
@@ -285,60 +254,36 @@ class SandPaper(object):
         :returns: Yields normalized records
         """
 
-        statistics = {}
-        source_book = pyexcel.get_book(file_name=from_file)
-        target_sheets = collections.OrderedDict()
+        for record in pyexcel.iget_records(
+            file_name=from_file,
+            sheet_name=sheet_name,
+            **kwargs
+        ):
+            if callable(progress_hook):
+                progress_hook(record)
 
-        for sheet_name in source_book.sheet_names():
-            if sheet_name not in statistics:
-                statistics[sheet_name] = {}
-            sheet_records = []
-            for record in pyexcel.iget_records(
-                file_name=from_file,
-                sheet_name=sheet_name,
-                **kwargs
-            ):
-                # handle defined value rules
-                for (rule, rule_kwargs,) in self.value_rules:
+            for (rule, rule_args, rule_kwargs,) in self.rules:
+                if rule in self.value_rules:
                     for (column, value,) in self._filter_values(
-                        sheet_name, record,
-                        **rule_kwargs
+                        record, **rule_kwargs
                     ):
-                        if rule.__name__ not in statistics[sheet_name]:
-                            statistics[sheet_name][rule.__name__] = 0
-                        statistics[sheet_name][rule.__name__] += 1
-                        # value rules are implicitly passed a copy of the
-                        # record and the allowed columns as filtered by
-                        # _filter_values
-                        record[column] = \
-                            rule(self, record.copy(), column, **rule_kwargs)
-                # handle defined record rules
-                for (rule, rule_kwargs,) in self.record_rules:
-                    for allowed_record in self._filter_records(
-                        sheet_name, record,
-                        **rule_kwargs
-                    ):
-                        if rule.__name__ not in statistics[sheet_name]:
-                            statistics[sheet_name][rule.__name__] = 0
-                        statistics[sheet_name][rule.__name__] += 1
-                        # record rules are only implicitly passed a copy of
-                        # the allowed records as filtered by _filter_records
-                        record = \
-                            rule(self, allowed_record.copy(), **rule_kwargs)
-                sheet_records.append(record)
+                        record[column] = rule(
+                            self, record.copy(), column,
+                            *rule_args, **rule_kwargs
+                        )
+                else:
+                    record = rule(
+                        self, record.copy(),
+                        *rule_args, **rule_kwargs
+                    )
 
-            # build 2D array from processed records, this is pyexcel's fault
-            # for lacking full support for all their reading formats
-            record_array = [[]]
-            for record in sheet_records:
-                if len(record.keys()) > len(record_array[0]):
-                    record_array[0] = list(record.keys())
-                record_array.append(list(record.values()))
+            yield record
 
-            target_sheets[sheet_name] = record_array
-        return (pyexcel.Book(sheets=target_sheets), statistics,)
-
-    def _apply_to(self, from_file, to_file, **kwargs):
+    def _apply_to(
+        self, from_file, to_file,
+        sheet_name=None, progress_hook=None,
+        **kwargs
+    ):
         """ Threadable rule processing method.
 
         .. important:: No overwrite protection is enabled for this method.
@@ -352,12 +297,16 @@ class SandPaper(object):
         :rtype: str
         """
 
-        (book, statistics,) = self._apply_rules(from_file, **kwargs)
-        book.save_as(
-            to_file,
-            lineterminator=os.linesep
+        pyexcel.isave_as(
+            records=list(self._apply_rules(
+                from_file,
+                sheet_name=sheet_name, progress_hook=progress_hook,
+                **kwargs
+            )),
+            dest_file_name=to_file,
+            lineterminator=os.linesep,
         )
-        return (to_file, statistics,)
+        return to_file
 
     @value_rule
     def lower(self, record, column, **kwargs):
@@ -505,7 +454,7 @@ class SandPaper(object):
     @value_rule
     def increment(
         self, record, column,
-        amount,
+        amount=1,
         **kwargs
     ):
         """ A basic increment rule for a given value.
@@ -529,7 +478,7 @@ class SandPaper(object):
     @value_rule
     def decrement(
         self, record, column,
-        amount,
+        amount=1,
         **kwargs
     ):
         """ A basic decrement rule for a given value.
@@ -548,6 +497,18 @@ class SandPaper(object):
         value = record[column]
         if isinstance(value, (int, float,)):
             return (value - amount)
+        return value
+
+    @value_rule
+    def replace(
+        self, record, column,
+        replacements,
+        **kwargs
+    ):
+        value = record[column]
+        if isinstance(value, six.string_types):
+            for (from_text, to_text,) in replacements.items():
+                value = value.replace(from_text, to_text)
         return value
 
     @value_rule
@@ -590,7 +551,7 @@ class SandPaper(object):
     @value_rule
     def translate_text(
         self, record, column,
-        from_regex, to_format,
+        translations,
         **kwargs
     ):
         """ A text translation rule for a given value.
@@ -625,21 +586,30 @@ class SandPaper(object):
 
         # FIXME: find a better name than `from_regex`, its too unique
         value = record[column]
-        match = regex.match(from_regex, str(value))
-        if match is not None:
-            # NOTE: Would prefer to use PEP448, but have to do this for PY2
-            named_groups = kwargs.copy()
-            named_groups.update(match.groupdict())
 
-            return to_format.format(
-                *match.groups(), **kwargs
-            )
+        for (from_regex, to_format,) in translations.items():
+            match = regex.match(from_regex, str(value))
+            if match is not None:
+                # NOTE: Would prefer to use PEP448, but have to do this for PY2
+                named_groups = kwargs.copy()
+                named_groups.update(match.groupdict())
+
+                value = to_format.format(
+                    *[
+                        (capture if capture is not None else '')
+                        for capture in match.groups()
+                    ], **{
+                        name: (capture if capture is not None else '')
+                        for (name, capture) in named_groups.items()
+                    }
+                )
+
         return value
 
     @value_rule
     def translate_date(
         self, record, column,
-        from_formats, to_format,
+        translations,
         **kwargs
     ):
         """ A date translation rule for a given value.
@@ -681,27 +651,22 @@ class SandPaper(object):
         :returns: The value potentially translated value
         """
 
-        # NOTE: local import of dateparser, potentailly slow due to issue
-        # https://github.com/scrapinghub/dateparser/issues/253
-        import dateparser
-
-        if 'column_filter' not in kwargs:
-            warnings.warn((
-                'translate_date usually does not function well without an '
-                'explicit column_filter'
-            ), UserWarning)
         value = record[column]
-        parsed_date = dateparser.parse(
-            str(value),
-            date_formats=from_formats,
-            settings={'STRICT_PARSING': True}
-        )
-        if parsed_date is not None:
-            return parsed_date.strftime(to_format)
+        if isinstance(value, (datetime.date, datetime.datetime,)):
+            # FIXME: This isn't my fault but it needs to be fixed
+            # pyexcel shouldn't detect this datetime with the __default_apply
+            # parameters implicitly passed, but it does...
+            return arrow.get(value).format(list(translations.values())[0])
+
+        for (from_format, to_format,) in translations.items():
+            try:
+                return arrow.get(value, from_format).format(to_format)
+            except ValueError:
+                continue
         return value
 
     @record_rule
-    def add_column(self, record, column_name, column_value, **kwargs):
+    def add_columns(self, record, column_adds, **kwargs):
         """ Adds a column to a record.
 
         .. note:: If ``column_value`` is a callable, then the callable should
@@ -725,20 +690,22 @@ class SandPaper(object):
 
         # TODO: add the ability to specify index in the record to add column to
         # column already exists, completely ignore adding it
-        if column_name in record:
-            return record
 
-        if callable(column_value):
-            record[column_name] = column_value(record)
-        elif isinstance(column_value, six.string_types):
-            record[column_name] = column_value.format(**record)
-        else:
-            record[column_name] = column_value
+        for (name, value,) in column_adds.items():
+            if name in record:
+                continue
+
+            if callable(value):
+                record[name] = value(record)
+            elif isinstance(value, six.string_types):
+                record[name] = value.format(**record)
+            else:
+                record[name] = value
 
         return record
 
     @record_rule
-    def remove_column(self, record, column_name, **kwargs):
+    def remove_columns(self, record, column_removes, **kwargs):
         """ Removes a column from a record.
 
         :param collections.OrderedDict record: A record whose value within
@@ -748,17 +715,15 @@ class SandPaper(object):
         :returns: The record with a potential newly removed column
         """
 
-        # column does not exist, completely ignore removing it
-        if column_name not in record:
-            return record
+        for name in column_removes:
+            if name in record:
+                del record[name]
 
-        del record[column_name]
         return record
 
     @record_rule
-    def map_column(
-        self, record, from_column, to_column,
-        replace=False,
+    def rename_columns(
+        self, record, column_renames,
         **kwargs
     ):
         """ Maps an existing column to a new column.
@@ -773,17 +738,34 @@ class SandPaper(object):
         :returns: The record with the remapped column
         """
 
-        if from_column not in record:
-            return record
+        # full OrderedDict rebuild required for column renaming
+        return collections.OrderedDict([(
+            (column_renames[key] if key in column_renames else key),
+            value,
+        ) for (key, value,) in record.items()])
 
-        record[to_column] = record[from_column]
-        if replace:
-            del record[from_column]
-        return record
+    @record_rule
+    def order_columns(
+        self, record, column_order,
+        ignore_missing=False,
+        **kwargs
+    ):
+        ordered_record = collections.OrderedDict([
+            (column_name, record[column_name],)
+            for column_name in column_order
+            if column_name in record
+        ])
+
+        if not ignore_missing:
+            for column_name in record:
+                if column_name not in ordered_record:
+                    ordered_record[column_name] = record[column_name]
+
+        return ordered_record
 
     def apply(
-        self, from_glob,
-        max_workers=None, name_generator=None,
+        self, from_file, to_file,
+        sheet_name=None, progress_hook=None,
         **kwargs
     ):
         """ Applies a SandPaper instance rules to a given glob of files.
@@ -815,88 +797,64 @@ class SandPaper(object):
             (applied to the pyexcel ``iget_records`` method)
         :returns: Yields output filepaths (not in any consistent order)
         """
-        # TODO: add file metainfo to the kwargs
-        from_glob = path.Path(from_glob).expand().abspath().normpath()
 
         # precompile filter regexes (kinda speeds up the processing)
-        for (rule, rule_kwargs,) in (self.value_rules + self.record_rules):
+        for (rule, rule_args, rule_kwargs,) in self.rules:
             for (key, value,) in rule_kwargs.items():
                 if key in self.__available_filters and \
                         isinstance(value, six.string_types):
                     rule_kwargs[key] = regex.compile(value)
 
-        futures = []
         try:
-            # build a thread pool for processing files in parallel
-            with concurrent.futures.ThreadPoolExecutor(max_workers=(
-                max_workers
-                if (
-                    isinstance(max_workers, six.integer_types) and
-                    max_workers > 0
-                ) else
-                self.default_workers
-            )) as executor:
-                for file_path in utils.fancy_glob(from_glob, fancy_path=True):
-                    to_file = (
-                        self._generate_filename
-                        if not callable(name_generator) else
-                        name_generator
-                    )(file_path)
-                    # start an async future for processing a file
-                    futures.append(executor.submit(
-                        self._apply_to,
-                        *(str(file_path), to_file,),
-                        **dict(self.__default_apply, **kwargs)
-                    ))
-            # yield evaluated future results
-            for future in futures:
-                yield future.result()
+            return self._apply_to(
+                from_file, to_file,
+                sheet_name=sheet_name, progress_hook=progress_hook,
+                **dict(self.__default_apply, **kwargs)
+            )
         finally:
-            # NOTE: because pyexcel does some intersting memory manipulation
-            # we need to free the resources allocted by the async processes
             pyexcel.free_resources()
 
-    def export(self):
-        """ Exports a serialization of the active rules.
-
-        .. note:: Currently the exported serialization does not include
-            callable filters.
-            So, if your normalization tasks rely on them, it is currently
-            suggested to simply store the initialization of the SandPaper
-            instance instead of trying to load them from a serialized export.
-
-        :returns: the serialization dict
-        :rtype: dict
-        """
-
-        serial = {'name': self.name, 'rules': {}}
-        for rule_group in ('value_rules', 'record_rules',):
-            # NOTE: The current serialization excludes callable kwarg_values
-            serial['rules'][rule_group] = [
-                (rule.__name__, {
-                    kwarg_name: kwarg_value
-                    for (kwarg_name, kwarg_value) in rule_kwargs.items()
-                    if not callable(kwarg_value)
-                },)
-                for (rule, rule_kwargs,) in getattr(self, rule_group)
-            ]
-        return serial
-
-    @classmethod
-    def load(cls, serialization):
-        """ Creates a new SandPaper instance from an exported serialization.
-
-        :param dict serialization: The exported serialization
-        :returns: An SandPaper instance
-        :rtype: SandPaper
-        """
-
-        instance = cls(serialization['name'])
-        for rule_group in ('value_rules', 'record_rules',):
-            getattr(instance, rule_group).extend([
-                (getattr(instance, rule_name), rule_kwargs,)
-                for (rule_name, rule_kwargs,) in serialization[
-                    'rules'
-                ][rule_group]
-            ])
-        return instance
+    # def export(self):
+    #     """ Exports a serialization of the active rules.
+    #
+    #     .. note:: Currently the exported serialization does not include
+    #         callable filters.
+    #         So, if your normalization tasks rely on them, it is currently
+    #         suggested to simply store the initialization of the SandPaper
+    #         instance instead of trying to load them from a serialized export.
+    #
+    #     :returns: the serialization dict
+    #     :rtype: dict
+    #     """
+    #
+    #     serial = {'name': self.name, 'rules': {}}
+    #     for rule_group in ('value_rules', 'record_rules',):
+    #         # NOTE: The current serialization excludes callable kwarg_values
+    #         serial['rules'][rule_group] = [
+    #             (rule.__name__, {
+    #                 kwarg_name: kwarg_value
+    #                 for (kwarg_name, kwarg_value) in rule_kwargs.items()
+    #                 if not callable(kwarg_value)
+    #             },)
+    #             for (rule, rule_kwargs,) in getattr(self, rule_group)
+    #         ]
+    #     return serial
+    #
+    # @classmethod
+    # def load(cls, serialization):
+    #     """ Creates a new SandPaper instance from an exported serialization.
+    #
+    #     :param dict serialization: The exported serialization
+    #     :returns: An SandPaper instance
+    #     :rtype: SandPaper
+    #     """
+    #
+    #     instance = cls(serialization['name'])
+    #     for rule_group in ('value_rules', 'record_rules',):
+    #         getattr(instance, rule_group).extend([
+    #             (getattr(instance, rule_name), rule_kwargs,)
+    #             for (rule_name, rule_kwargs,) in serialization[
+    #                 'rules'
+    #             ][rule_group]
+    #         ])
+    #     return instance
