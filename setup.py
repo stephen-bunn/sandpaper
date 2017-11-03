@@ -13,17 +13,11 @@ import setuptools
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 REQUIRES = [
     'six',
-    'futures',
     'regex',
-    'path.py',
-    'braceexpand',
     'pyexcel',
     'pyexcel-io',
     'pyexcel-xls',
     'pyexcel-xlsx',
-    'psutil',
-    'dateparser',
-    'simplejson',
 ]
 RELEASE = {}
 

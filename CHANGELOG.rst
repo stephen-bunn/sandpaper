@@ -8,8 +8,18 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 
 *unreleased*
 ------------
+
+
+`0.0.5`_ (*2017-11-03*)
+-----------------------
 * added enforcement for strict date parsing in ``translate_date`` rule
-* fixing the messy structure of all rules (cleaner and more intuitive use)
+* added ``rename_columns`` and ``order_columns`` record rules
+* fixed the naming of ``add_columns`` and ``remove_columns``
+* fixed the messy structure of all rules (cleaner and more intuitive use)
+* fixed documentation to match new rule structure
+* fixed all existing tests to match new rule structure
+* removed the ``substitute`` value rule (utilize ``translate_text`` instead)
+* removed extraneous badges from README and docuemtnation index
 
 
 `0.0.4`_ (*2017-10-26*)
@@ -47,6 +57,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 * fixed the project's base structure for PY2 compatability
 
 
+.. _0.0.5: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.5
 .. _0.0.4: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.4
 .. _0.0.3: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.3
 .. _0.0.2: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.2

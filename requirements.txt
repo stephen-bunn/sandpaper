@@ -1,15 +1,9 @@
-pyexcel
-path.py
-braceexpand
 six
 regex
-pyexcel-xls
-futures
-psutil
-dateparser
-simplejson
-pyexcel-xlsx
+pyexcel
 pyexcel-io
+pyexcel-xls
+pyexcel-xlsx
 
 # NOTE: required for readthedocs.io
 flask-sphinx-themes
