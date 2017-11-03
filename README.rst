@@ -1,8 +1,6 @@
-=========
-SandPaper
-=========
 
-Simplified table data normalization.
+.. image:: docs/source/_static/logo.png
+   :align: center
 
 |
 
