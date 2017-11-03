@@ -6,6 +6,7 @@
 
 import os
 import hashlib
+import warnings
 import datetime
 import functools
 import collections
@@ -116,6 +117,60 @@ class SandPaper(object):
 
         return int(self.uid, 16)
 
+    def __json__(self):
+        """ The current instance to a dictionary suitable for json encoding.
+
+        .. note:: Raises a UserWarning when a callable is discovered
+            as a critical part of a rule
+
+        :returns: A dictionary suitable for json encoding
+        :rtype: dict
+        """
+
+        return {
+            'name': self.name,
+            'uid': self.uid,
+            'rules': [(
+                rule.__name__,
+                self.__jsonify(rule_args, warn=True),
+                self.__jsonify(rule_kwargs, warn=True)
+            ) for (rule, rule_args, rule_kwargs,) in self.rules]
+        }
+
+    def __jsonify(self, value, warn=False):
+        """ Custom jsonification simplification of random values.
+
+        .. note:: Raises a UserWarning when a callable is discovered
+            as a critical part of a rule
+
+        :param .... value: A value to jsonify
+        :param bool warn: A flag to indicate if warnings need to be raised
+        :returns: The jsonification of the passed value
+        """
+
+        if isinstance(value, dict):
+            rebuild = {}
+            for (k, v,) in value.items():
+                jsonified = self.__jsonify(v)
+                if jsonified is not None:
+                    rebuild[k] = v
+            return rebuild
+        elif isinstance(value, (list, set, tuple,)):
+            rebuild = []
+            for i in value:
+                jsonified = self.__jsonify(i)
+                if jsonified is not None:
+                    rebuild.append(jsonified)
+            return rebuild
+        elif callable(value):
+            if warn:
+                warnings.warn((
+                    "callable '{value.__name__}' in paper instance detected, "
+                    "loading from json will not perform this action"
+                ).format(**locals()), UserWarning)
+            return None
+        return value
+
     @property
     def name(self):
         """ The descriptive name of the SandPaper instance.
@@ -155,11 +210,15 @@ class SandPaper(object):
         :rtype: str
         """
 
-        hasher = hashlib.md5()
+        hasher = hashlib.sha1()
         for (rule, rule_args, rule_kwargs,) in self.rules:
             hasher.update((
-                '{rule.__name__}({rule_args}, {rule_kwargs})'
-            ).format(**locals()).encode('utf-8'))
+                "{rule.__name__}({args}, {kwargs})"
+            ).format(
+                rule=rule,
+                args=self.__jsonify(rule_args),
+                kwargs=self.__jsonify(rule_kwargs)).encode('utf-8')
+            )
         return hasher.hexdigest()
 
     @property
@@ -772,3 +831,28 @@ class SandPaper(object):
             )
         finally:
             pyexcel.free_resources()
+
+    @classmethod
+    def from_json(cls, serialization):
+        """ Loads a SandPaper instance from a json serialization.
+
+        .. note:: Raises a ``UserWarning`` when the loaded instance does not
+            match the serialized instance's ``uid``.
+
+        :param dict serialization: The read json serialization
+        :returns: A new SandPaper instance
+        :rtype: SandPaper
+        """
+
+        paper = cls(serialization['name'])
+        for (
+            rule_name, rule_args, rule_kwargs,
+        ) in serialization['rules']:
+            getattr(paper, rule_name)(*rule_args, **rule_kwargs)
+        if paper.uid != serialization['uid']:
+            warnings.warn((
+                "loaded instance {paper} does not match serialization uid "
+                "'{serialization[uid]}', serialized instance most likely "
+                "cannot be fully serialized"
+            ).format(**locals()), UserWarning)
+        return paper
