@@ -19,7 +19,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 * fixed documentation to match new rule structure
 * fixed all existing tests to match new rule structure
 * removed the ``substitute`` value rule (utilize ``translate_text`` instead)
-* removed extraneous badges from README and docuemtnation index
+* removed extraneous badges from README and documentation index
 
 
 `0.0.4`_ (*2017-10-26*)
