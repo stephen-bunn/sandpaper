@@ -152,6 +152,18 @@ Several limitations to the effectiveness of the reading and writing of normalize
 These are described in the subsections below...
 
 
+.. _getting_started-one-sheet:
+
+One Sheet
+'''''''''
+
+SandPaper instance's are really only meant to be applied to one sheet at a time.
+Of course, this only applies to those table storage types that implement sheets (``.xlsx``, ``.xls``, etc...).
+
+It is up to the user to create SandPaper instances as necessary for each sheet that requires cleaning.
+This module is intended to clean and return parsable normalized data, not do Excell's job for it.
+
+
 .. _getting_started-reading-as-records:
 
 Reading as Records
