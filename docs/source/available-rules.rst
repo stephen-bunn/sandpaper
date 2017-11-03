@@ -124,38 +124,15 @@ Input  Output
 ====== ======
 
 
-:func:`~sandpaper.sandpaper.SandPaper.substitute`
-'''''''''''''''''''''''''''''''''''''''''''''''''
-A substitution rule that replaces regex matches with specified values.
-
-.. code-block:: python
-
-   SandPaper().substitute(
-      substitutes={
-         r'FL': 'Florida',
-         r'NC': 'North Carolina'
-      }
-   )
-
-
-====== ==============
-Input  Output
-====== ==============
-FL     Florida
-NC     North Carolina
-====== ==============
-
-
 :func:`~sandpaper.sandpaper.SandPaper.translate_text`
 '''''''''''''''''''''''''''''''''''''''''''''''''''''
 A translation rule that translate regex matches to a specified format.
 
 .. code-block:: python
 
-   SandPaper().translate_text(
-      from_regex=r'group_(?P<group_id>\d+)$',
-      to_format='{group_id}'
-   )
+   SandPaper().translate_text({
+      r'group_(?P<group_id>\d+)$': '{group_id}'
+   })
 
 
 ========= ==============
@@ -176,11 +153,11 @@ A translation rule that translate greedily evaluated dates to a specified dateti
 
 .. code-block:: python
 
-   SandPaper().translate_date(
-      from_formats=['%Y-%m-%d', '%Y-%m', '%Y'],
-      to_format='%Y'
-   )
-
+   SandPaper().translate_date({
+      'YYYY-MM-DD': 'YYYY',
+      'YYYY-MM': 'YYYY',
+      'YYYY': 'YYYY'
+   })
 
 ========== ==============
 Input      Output
@@ -197,14 +174,12 @@ Record Rules
 These rules are applied to every record regardless to most rule filters documented in :ref:`getting_started-rule-filters`.
 The only filter that applies to record rules is the ``sheet_filter`` rule.
 
-:func:`~sandpaper.sandpaper.SandPaper.add_column`
-'''''''''''''''''''''''''''''''''''''''''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.add_columns`
+''''''''''''''''''''''''''''''''''''''''''''''''''
 Adds a column to every record.
 
-The given ``column_value`` can either be a base type variable or a callable.
-If the ``column_value`` is a callable it should expect to receive the record as the only parameter and should return the value desired for the newly added column.
-
-.. note:: If the ``column_value`` is a string, the (key, value) pairs of the record are passed into the ``str.format`` method of the ``column_value``.
+The given dictionary should be a key value pairing where the key is a new column name and the paired value is either a callable, string, or other low level data type for the newly added column's value.
+If the value is a callable it should expect to receive the record as the only parameter and should return the value desired for the newly added column.
 
 .. code-block:: python
 
@@ -213,10 +188,9 @@ If the ``column_value`` is a callable it should expect to receive the record as 
    def gen_uuid(record):
       return uuid.uuid4()
 
-   SandPaper().add_column(
-      column_name='uuid',
-      column_value=gen_uuid
-   )
+   SandPaper().add_columns({
+      'uuid': gen_uuid
+   })
 
 
 == ===== =====
@@ -240,15 +214,15 @@ id name  value uuid
 == ===== ===== ====================================
 
 
-:func:`~sandpaper.sandpaper.SandPaper.remove_column`
-''''''''''''''''''''''''''''''''''''''''''''''''''''
+:func:`~sandpaper.sandpaper.SandPaper.remove_columns`
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
 Removes a column from every record.
 
 .. code-block:: python
 
-   SandPaper().remove_column(
-      column_name='name'
-   )
+   SandPaper().remove_columns([
+      'name'
+   ])
 
 
 == ===== =====
@@ -270,3 +244,69 @@ id value
 1  world
 2  table
 == =====
+
+
+:func:`~sandpaper.sandpaper.SandPaper.rename_columns`
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
+Renames a column for every record.
+
+.. code-block:: python
+
+   SandPaper().rename_columns([
+      'old_name': 'new_name'
+   ])
+
+
+== ======== =====
+Before
+-----------------
+id old_name value
+== ======== =====
+1  hello    world
+2  test     table
+== ======== =====
+
+|
+
+== ======== =====
+After
+-----------------
+id new_name value
+== ======== =====
+1  hello    world
+2  test     table
+== ======== =====
+
+
+:func:`~sandpaper.sandpaper.SandPaper.order_columns`
+''''''''''''''''''''''''''''''''''''''''''''''''''''
+Reorders columns from every record.
+
+.. code-block:: python
+
+   SandPaper().order_columns([
+      'value',
+      'name',
+      'id'
+   ])
+
+
+== ===== =====
+Before
+--------------
+id name  value
+== ===== =====
+1  hello world
+2  test  table
+== ===== =====
+
+|
+
+===== == =====
+After
+--------------
+value id name
+===== == =====
+world 1  hello
+table 2  test
+===== == =====
