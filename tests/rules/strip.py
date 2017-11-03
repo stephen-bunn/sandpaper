@@ -19,6 +19,13 @@ class StripRuleTest(BaseRuleTest):
         return 'strip'
 
     @property
+    def rule_arguments(self):
+        """ The arguments for this rule's application.
+        """
+
+        return ([], {},)
+
+    @property
     def rule_group(self):
         """ The group type of the rule.
         """

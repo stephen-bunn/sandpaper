@@ -5,5 +5,4 @@
 # MIT License <https://opensource.org/licenses/MIT>
 
 from .test_sandpaper import (SandPaperTest,)
-from .test_utils import (UtilTest,)
 from .rules import *

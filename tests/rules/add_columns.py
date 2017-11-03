@@ -7,8 +7,8 @@
 from ._common import BaseRuleTest
 
 
-class CapitalizeRuleTest(BaseRuleTest):
-    """ Tests the ``capitalize`` rule.
+class AddColumnsRuleTest(BaseRuleTest):
+    """ Tests the ``add_columns`` rule.
     """
 
     @property
@@ -16,18 +16,18 @@ class CapitalizeRuleTest(BaseRuleTest):
         """ The name of the rule.
         """
 
-        return 'capitalize'
+        return 'add_columns'
 
     @property
     def rule_arguments(self):
         """ The arguments for this rule's application.
         """
 
-        return ([], {},)
+        return ([{'test': 'test_value'}], {},)
 
     @property
     def rule_group(self):
         """ The group type of the rule.
         """
 
-        return 'value_rules'
+        return 'record_rules'

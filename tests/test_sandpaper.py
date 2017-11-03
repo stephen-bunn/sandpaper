@@ -36,10 +36,10 @@ class SandPaperTest(unittest.TestCase):
         # test named initialization
         self.assertIsInstance(self.named_paper.name, six.string_types)
         self.assertEqual(self.named_paper.name, 'test')
-        self.assertIsInstance(self.named_paper.value_rules, list)
-        self.assertEqual(self.named_paper.value_rules, [])
-        self.assertIsInstance(self.named_paper.record_rules, list)
-        self.assertEqual(self.named_paper.record_rules, [])
+        self.assertIsInstance(self.named_paper.value_rules, set)
+        self.assertEqual(self.named_paper.value_rules, set())
+        self.assertIsInstance(self.named_paper.record_rules, set)
+        self.assertEqual(self.named_paper.record_rules, set())
         self.assertNotEqual(self.named_paper.name, self.named_paper.uid)
         self.assertIsInstance(self.named_paper.__repr__(), six.string_types)
 
@@ -48,10 +48,10 @@ class SandPaperTest(unittest.TestCase):
         # NOTE: unknown hash for blank paper name with no rules
         # just check that it isn't blank
         self.assertGreater(len(self.blank_paper.name), 0)
-        self.assertIsInstance(self.blank_paper.value_rules, list)
-        self.assertEqual(self.blank_paper.value_rules, [])
-        self.assertIsInstance(self.blank_paper.record_rules, list)
-        self.assertEqual(self.blank_paper.record_rules, [])
+        self.assertIsInstance(self.blank_paper.value_rules, set)
+        self.assertEqual(self.blank_paper.value_rules, set())
+        self.assertIsInstance(self.blank_paper.record_rules, set)
+        self.assertEqual(self.blank_paper.record_rules, set())
         self.assertEqual(self.blank_paper.name, self.blank_paper.uid)
         self.assertIsInstance(self.blank_paper.__repr__(), six.string_types)
 
@@ -79,8 +79,10 @@ class SandPaperTest(unittest.TestCase):
         )
 
         # validate value rule removal
-        del self.named_paper.value_rules[:]
-        del self.blank_paper.value_rules[:]
+        del self.named_paper.rules[:]
+        del self.blank_paper.rules[:]
+        self.named_paper.value_rules.clear()
+        self.blank_paper.value_rules.clear()
         self.assertEqual(self.named_paper, self.blank_paper)
         self.assertNotEqual(
             self.named_paper.__repr__(),
@@ -88,11 +90,11 @@ class SandPaperTest(unittest.TestCase):
         )
 
         # different record rules mean instances are different
-        self.named_paper.add_column(column_name='test', column_value='test')
+        self.named_paper.add_columns({'test': 'test'})
         self.assertNotEqual(self.named_paper, self.blank_paper)
 
         # same record rules man instances are equal
-        self.blank_paper.add_column(column_name='test', column_value='test')
+        self.blank_paper.add_columns({'test': 'test'})
         self.assertEqual(self.named_paper, self.blank_paper)
         self.assertNotEqual(
             self.named_paper.__repr__(),
@@ -100,8 +102,10 @@ class SandPaperTest(unittest.TestCase):
         )
 
         # validate record rule removal
-        del self.named_paper.record_rules[:]
-        del self.blank_paper.record_rules[:]
+        del self.named_paper.rules[:]
+        del self.blank_paper.rules[:]
+        self.named_paper.record_rules.clear()
+        self.blank_paper.record_rules.clear()
         self.assertEqual(self.named_paper, self.blank_paper)
         self.assertNotEqual(
             self.named_paper.__repr__(),
@@ -116,28 +120,32 @@ class SandPaperTest(unittest.TestCase):
         self.assertEqual(self.named_paper, self.blank_paper)
 
         # ensure serialization between export and load functions
-        named_export = self.named_paper.export()
+        named_export = self.named_paper.__json__()
         self.assertIsInstance(named_export, dict)
-        named_load = sandpaper.SandPaper.load(named_export)
+        named_load = sandpaper.SandPaper.from_json(named_export)
         self.assertIsInstance(named_load, sandpaper.SandPaper)
         self.assertEqual(named_load, self.named_paper)
 
         # ensure serialization of equality objects are the same
-        blank_export = self.blank_paper.export()
+        blank_export = self.blank_paper.__json__()
         self.assertIsInstance(blank_export, dict)
-        blank_load = sandpaper.SandPaper.load(blank_export)
+        blank_load = sandpaper.SandPaper.from_json(blank_export)
         self.assertIsInstance(blank_load, sandpaper.SandPaper)
         self.assertEqual(named_load, blank_load)
         self.assertEqual(blank_load, self.blank_paper)
 
         # ensure serialization of ruled objects are not the same
         self.named_paper.lower()
-        named_export_modified = self.named_paper.export()
+        named_export_modified = self.named_paper.__json__()
         self.assertIsInstance(named_export_modified, dict)
         self.assertNotEqual(named_export_modified, named_export)
-        named_export_load = sandpaper.SandPaper.load(named_export_modified)
+        named_export_load = sandpaper.SandPaper.from_json(
+            named_export_modified
+        )
         self.assertIsInstance(named_export_load, sandpaper.SandPaper)
         self.assertEqual(named_export_load, self.named_paper)
 
         # clean rule changes
-        del self.named_paper.value_rules[:]
+        del self.named_paper.rules[:]
+        self.named_paper.record_rules.clear()
+        self.named_paper.value_rules.clear()
