@@ -248,7 +248,6 @@ class SandPaper(object):
             sheet_name=sheet_name,
             **kwargs
         ):
-
             # start application of all registered rules
             for (rule, rule_args, rule_kwargs,) in self.rules:
                 if rule in self.value_rules:
@@ -283,6 +282,7 @@ class SandPaper(object):
 
         :param str from_file: The input filepath
         :param str to_file: The output filepath
+        :param str sheet_name: The name of the sheet to apply rules to
         :param dict kwargs: Any named arguments, passed to ``_apply_rules``
         :returns: The saved normalized filepath
         :rtype: str
@@ -498,6 +498,15 @@ class SandPaper(object):
     ):
         """ Applies a replacements dictionary to a value.
 
+        Take for example the following SandPaper instance:
+
+        .. code-block:: python
+
+            s = SandPaper('my-sandpaper').replace({
+                'this_is_going_to_be_replaced': 'with_this',
+            })
+
+
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
@@ -525,11 +534,9 @@ class SandPaper(object):
 
         .. code-block:: python
 
-            s = SandPaper('my-sandpaper').translate_text(
-                column_filter=r'^group_definition$',
-                from_regex=r'^group(?P<group_id>\d+)\s*(.*)$',
-                to_format='{group_id}'
-            )
+            s = SandPaper('my-sandpaper').translate_text({
+                r'^group(?P<group_id>\d+)\s*(.*)$': '{group_id}'
+            }, column_filter=r'^group_definition$')
 
 
         This will translate all instances of the value
@@ -543,13 +550,12 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param str from_regex: A value matched regex
-        :param str to_format: A format for matched value translation
+        :param dict[str, str] translations: A dictionary of translations for
+            the value
         :param dict kwargs: Any named arguments
-        :returns: The value potentially translated value
+        :returns: The potentially translated value
         """
 
-        # FIXME: find a better name than `from_regex`, its too unique
         value = record[column]
 
         for (from_regex, to_format,) in translations.items():
@@ -584,20 +590,20 @@ class SandPaper(object):
 
         .. code-block:: python
 
-            s = SandPaper('my-sandpaper').translate_date(
-                column_filter=r'^(.*)_date$',
-                from_formats=['%Y-%m-%d', '%m-%d'],
-                to_format='%c'
-            )
+            s = SandPaper('my-sandpaper').translate_date({
+                'YYYY-MM-DD': 'YYYY',
+                'YYYY': 'YYYY',
+                'YYYY-MM': 'YYYY'
+            }, column_filter=r'^(.*)_date$')
 
 
-        This will translate all instances of a date value in columns ending
-        with ``_date`` to the date format ``%c``, *prioritizing* the date
-        formats described in ``from_formats``.
+        This will translate all instances of a date value matching the given
+        date formats in columns ending with ``_date`` to the date format
+        ``YYYY``.
 
         .. important:: Note that the date evaluation is done through the
-            `dateparser <https://dateparser.readthedocs.io/en/latest/>`_ module
-            and greedily discovers date formats.
+            `arrow <https://arrow.readthedocs.io/en/latest/>`_ module
+            and discovers date formats.
 
             This could lead to unexpected date changes. For this reason, it is
             implicitly required that at the very least a ``column_filter`` is
@@ -611,8 +617,8 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param list[str] from_formats: A list of prioritized date formats
-        :param str to_format: A format for date format translation
+        :param dict[str, str] translations: A dictionary of translations from
+            an arrow based dateformats to a different format
         :param dict kwargs: Any named arguments
         :returns: The value potentially translated value
         """
@@ -632,24 +638,24 @@ class SandPaper(object):
         return value
 
     @record_rule
-    def add_columns(self, record, column_adds, **kwargs):
-        """ Adds a column to a record.
+    def add_columns(self, record, additions, **kwargs):
+        """ Adds columns to a record.
 
-        .. note:: If ``column_value`` is a callable, then the callable should
-            expect the ``record`` as the only parameter and should return
-            the value that should be placed in the newly added column.
+        .. note:: If the value of an entry in ``additions`` is a callable,
+            then the callable should expect the ``record`` as the only
+            parameter and should return the value that should be placed in the
+            newly added column.
 
-            If ``column_value`` is a string, the record is passed in as kwargs
-            to the ``column_value.format`` method.
+            If the value of an entry in ``additions`` is a string, the record
+            is passed in as kwargs to the value's ``format`` method.
 
-            Otherwise, ``column_value`` is simply used as the newly added
-            column's value.
+            Otherwise, the value of an entry in ``additions`` is simply used
+            as the newly added column's value.
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
-        :param str column_name: The name of the column to add
-        :param column_value: The column value to populate the new column with
-        :type column_value: callable or str or ....
+        :param dict[str,....] additions: A dictionary of column names to
+            callables, strings, or other values
         :param dict kwargs: Any named arguments
         :returns: The record with a potential newly added column
         """
@@ -657,7 +663,7 @@ class SandPaper(object):
         # TODO: add the ability to specify index in the record to add column to
         # column already exists, completely ignore adding it
 
-        for (name, value,) in column_adds.items():
+        for (name, value,) in additions.items():
             if name in record:
                 continue
 
@@ -671,17 +677,17 @@ class SandPaper(object):
         return record
 
     @record_rule
-    def remove_columns(self, record, column_removes, **kwargs):
-        """ Removes a column from a record.
+    def remove_columns(self, record, removes, **kwargs):
+        """ Removes columns from a record.
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
-        :param str column_name: The name of the column to remove
+        :param list[str] removes: A list of columns to remove
         :param dict kwargs: Any named arguments
         :returns: The record with a potential newly removed column
         """
 
-        for name in column_removes:
+        for name in removes:
             if name in record:
                 del record[name]
 
@@ -689,76 +695,63 @@ class SandPaper(object):
 
     @record_rule
     def rename_columns(
-        self, record, column_renames,
+        self, record, renames,
         **kwargs
     ):
         """ Maps an existing column to a new column.
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
-        :param str from_column: The name of the column to remap
-        :param str to_column: The new name of the column to remap to
-        :param bool replace: Boolean which indicates if original column
-            should be removed
+        :param dict[str, str] renames: A dictionary of column to column renames
         :param dict kwargs: Any named arguments
         :returns: The record with the remapped column
         """
 
         # full OrderedDict rebuild required for column renaming
         return collections.OrderedDict([(
-            (column_renames[key] if key in column_renames else key),
+            (renames[key] if key in renames else key),
             value,
         ) for (key, value,) in record.items()])
 
     @record_rule
     def order_columns(
-        self, record, column_order,
+        self, record, order,
         ignore_missing=False,
         **kwargs
     ):
+        """ Orders columns in a specific order.
+
+        :param collections.OrderedDict record: A record who should be ordered
+        :param list[str] order: The order that columns need to be in
+        :param bool ignore_missing: Boolean which inidicates if missing columns
+            from ``order`` should be ignored
+        :param dict kwargs: Any named arguments
+        :returns: The record with the columns reordered
+        """
         ordered_record = collections.OrderedDict([
             (column_name, record[column_name],)
-            for column_name in column_order
+            for column_name in order
             if column_name in record
         ])
 
         if not ignore_missing:
             for column_name in record:
-                if column_name not in ordered_record:
+                if column_name not in order:
                     ordered_record[column_name] = record[column_name]
 
         return ordered_record
 
     def apply(
         self, from_file, to_file,
-        sheet_name=None, progress_hook=None,
+        sheet_name=None,
         **kwargs
     ):
         """ Applies a SandPaper instance rules to a given glob of files.
 
-        .. important:: *You can use fancy brace expansion with this glob!*
-            For example, the glob ``*.{csv,xls{,x}}`` will capture all files
-            using the extensions ``csv``, ``xls``, and ``xlsx``!
-
-            Learn more about this format from
-            `here <https://pypi.python.org/pypi/braceexpand/0.1.1>`_!
-
-        .. note:: The ``name_generator`` callable will be passed in a
-            `path.Path <https://pathpy.readthedocs.io/en/latest/api.html>`_
-            instance and expects to be returned an appropriate filepath
-            as a string.
-
-        .. note:: The default output filepaths simply prefix the input file's
-            extension with the ``.sanded`` extension.
-
-            For example, the filepath ``sample.xlsx`` will become
-            ``sample.sanded.xlsx``.
-
-        :param str from_glob: A matching glob for all desired files
-        :param int max_workers: The maximum amount of files to process in
-            parallel
-        :param callable name_generator: A callable that
-            generates output filepaths given the path.Path instance
+        :param str from_file: The path of the file to apply the rules to
+        :param str to_file: The path of the file to write to
+        :param str sheet_name: The name of the sheet to apply rules to
+            (defaults to the first available sheet)
         :param dict kwargs: Any additional named arguments
             (applied to the pyexcel ``iget_records`` method)
         :returns: Yields output filepaths (not in any consistent order)
@@ -774,53 +767,8 @@ class SandPaper(object):
         try:
             return self._apply_to(
                 from_file, to_file,
-                sheet_name=sheet_name, progress_hook=progress_hook,
+                sheet_name=sheet_name,
                 **dict(self.__default_apply, **kwargs)
             )
         finally:
             pyexcel.free_resources()
-
-    # def export(self):
-    #     """ Exports a serialization of the active rules.
-    #
-    #     .. note:: Currently the exported serialization does not include
-    #         callable filters.
-    #         So, if your normalization tasks rely on them, it is currently
-    #         suggested to simply store the initialization of the SandPaper
-    #         instance instead of trying to load them from a serialized export.
-    #
-    #     :returns: the serialization dict
-    #     :rtype: dict
-    #     """
-    #
-    #     serial = {'name': self.name, 'rules': {}}
-    #     for rule_group in ('value_rules', 'record_rules',):
-    #         # NOTE: The current serialization excludes callable kwarg_values
-    #         serial['rules'][rule_group] = [
-    #             (rule.__name__, {
-    #                 kwarg_name: kwarg_value
-    #                 for (kwarg_name, kwarg_value) in rule_kwargs.items()
-    #                 if not callable(kwarg_value)
-    #             },)
-    #             for (rule, rule_kwargs,) in getattr(self, rule_group)
-    #         ]
-    #     return serial
-    #
-    # @classmethod
-    # def load(cls, serialization):
-    #     """ Creates a new SandPaper instance from an exported serialization.
-    #
-    #     :param dict serialization: The exported serialization
-    #     :returns: An SandPaper instance
-    #     :rtype: SandPaper
-    #     """
-    #
-    #     instance = cls(serialization['name'])
-    #     for rule_group in ('value_rules', 'record_rules',):
-    #         getattr(instance, rule_group).extend([
-    #             (getattr(instance, rule_name), rule_kwargs,)
-    #             for (rule_name, rule_kwargs,) in serialization[
-    #                 'rules'
-    #             ][rule_group]
-    #         ])
-    #     return instance

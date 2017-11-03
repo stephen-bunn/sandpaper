@@ -16,11 +16,3 @@ sandpaper\.sandpaper module
     :members:
     :undoc-members:
     :show-inheritance:
-
-sandpaper\.utils module
------------------------
-
-.. automodule:: sandpaper.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:

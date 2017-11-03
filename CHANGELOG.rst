@@ -9,6 +9,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 *unreleased*
 ------------
 * added enforcement for strict date parsing in ``translate_date`` rule
+* fixing the messy structure of all rules (cleaner and more intuitive use)
 
 
 `0.0.4`_ (*2017-10-26*)
