@@ -10,10 +10,6 @@ Simplified table data normalization.
    :target: https://pypi.org/project/sandpaper/
    :alt: PyPi Status
 
-.. image:: https://img.shields.io/github/tag/stephen-bunn/sandpaper.svg
-   :target: https://github.com/stephen-bunn/sandpaper/releases/latest
-   :alt: Repository Tag
-
 .. image:: https://img.shields.io/pypi/pyversions/sandpaper.svg
    :target: https://pypi.org/project/sandpaper/
    :alt: Supported Versions
