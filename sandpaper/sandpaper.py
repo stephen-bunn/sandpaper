@@ -13,7 +13,6 @@ import collections
 
 import six
 import regex
-import arrow
 import pyexcel
 
 
@@ -354,7 +353,7 @@ class SandPaper(object):
                 **kwargs
             )),
             dest_file_name=to_file,
-            lineterminator=os.linesep,
+            dest_lineterminator=os.linesep,
         )
         return to_file
 
@@ -569,8 +568,8 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param dict[str, str] replacements: A dictionary of replacements
-            for the value
+        :param replacements: A dictionary of replacements for the value
+        :type replacements: dict[str, str]
         :param dict kwargs: Any named arguments
         :returns: The value with all replacements made
         """
@@ -609,8 +608,8 @@ class SandPaper(object):
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param dict[str, str] translations: A dictionary of translations for
-            the value
+        :param translations: A dictionary of translations the value
+        :type translations: dict[str, str]
         :param dict kwargs: Any named arguments
         :returns: The potentially translated value
         """
@@ -650,34 +649,22 @@ class SandPaper(object):
         .. code-block:: python
 
             s = SandPaper('my-sandpaper').translate_date({
-                'YYYY-MM-DD': 'YYYY',
-                'YYYY': 'YYYY',
-                'YYYY-MM': 'YYYY'
+                '%Y-%m-%d': '%Y',
+                '%Y': '%Y',
+                '%Y-%m': '%Y'
             }, column_filter=r'^(.*)_date$')
 
 
         This will translate all instances of a date value matching the given
         date formats in columns ending with ``_date`` to the date format
-        ``YYYY``.
-
-        .. important:: Note that the date evaluation is done through the
-            `arrow <https://arrow.readthedocs.io/en/latest/>`_ module
-            and discovers date formats.
-
-            This could lead to unexpected date changes. For this reason, it is
-            implicitly required that at the very least a ``column_filter`` is
-            used to filter what columns should be considered. The use of a
-            ``value_filter`` would ensure even less false positive date
-            evaluation.
-
-        .. note:: Raises a UserWarning if the lack of a ``column_filter`` is
-            detected.
+        ``%Y``.
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
         :param str column: A column that indicates what value to normalize
-        :param dict[str, str] translations: A dictionary of translations from
+        :param translations: A dictionary of translations from
             an arrow based dateformats to a different format
+        :type translations: dict[str, str]
         :param dict kwargs: Any named arguments
         :returns: The value potentially translated value
         """
@@ -687,11 +674,13 @@ class SandPaper(object):
             # FIXME: This isn't my fault but it needs to be fixed
             # pyexcel shouldn't detect this datetime with the __default_apply
             # parameters implicitly passed, but it does...
-            return arrow.get(value).format(list(translations.values())[0])
+            return value.strftime(list(translations.values())[0])
 
         for (from_format, to_format,) in translations.items():
             try:
-                return arrow.get(value, from_format).format(to_format)
+                return datetime.datetime.strptime(
+                    value, from_format
+                ).strftime(to_format)
             except ValueError:
                 continue
         return value
@@ -713,8 +702,9 @@ class SandPaper(object):
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
-        :param dict[str,....] additions: A dictionary of column names to
-            callables, strings, or other values
+        :param additions: A dictionary of column names to callables, strings,
+            or other values
+        :type additions: dict[str,....]
         :param dict kwargs: Any named arguments
         :returns: The record with a potential newly added column
         """
@@ -741,7 +731,8 @@ class SandPaper(object):
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
-        :param list[str] removes: A list of columns to remove
+        :param removes: A list of columns to remove
+        :type removes: list[str]
         :param dict kwargs: Any named arguments
         :returns: The record with a potential newly removed column
         """
@@ -761,7 +752,8 @@ class SandPaper(object):
 
         :param collections.OrderedDict record: A record whose value within
             ``column`` should be normalized and returned
-        :param dict[str, str] renames: A dictionary of column to column renames
+        :param renames: A dictionary of column to column renames
+        :type renames: dict[str, str]
         :param dict kwargs: Any named arguments
         :returns: The record with the remapped column
         """
@@ -781,7 +773,8 @@ class SandPaper(object):
         """ Orders columns in a specific order.
 
         :param collections.OrderedDict record: A record who should be ordered
-        :param list[str] order: The order that columns need to be in
+        :param order: The order that columns need to be in
+        :type order: list[str]
         :param bool ignore_missing: Boolean which inidicates if missing columns
             from ``order`` should be ignored
         :param dict kwargs: Any named arguments

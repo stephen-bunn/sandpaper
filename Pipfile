@@ -9,19 +9,19 @@ name = "pypi"
 
 six = "*"
 regex = "*"
-arrow = "*"
 pyexcel = "*"
-pyexcel-io = "*"
 pyexcel-xls = "*"
 pyexcel-xlsx = "*"
+pyexcel-io = "*"
 
 
 [dev-packages]
 
 "flake8" = "*"
 ptpython = "*"
-sphinx = "*"
-flask-sphinx-themes = "*"
+Sphinx = "*"
+Flask-Sphinx-Themes = "*"
 nose = "*"
 coverage = "*"
-cprofilev = "*"
+CProfileV = "*"
+braceexpand = "*"

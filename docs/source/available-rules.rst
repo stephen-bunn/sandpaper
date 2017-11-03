@@ -154,9 +154,9 @@ A translation rule that translate greedily evaluated dates to a specified dateti
 .. code-block:: python
 
    SandPaper().translate_date({
-      'YYYY-MM-DD': 'YYYY',
-      'YYYY-MM': 'YYYY',
-      'YYYY': 'YYYY'
+      '%Y-%m-%d': '%Y',
+      '%Y-%m': '%Y',
+      '%Y': '%Y'
    })
 
 ========== ==============

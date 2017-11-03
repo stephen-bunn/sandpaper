@@ -124,19 +124,23 @@ These filters are processed in the order presented and are completely optional.
 Saving SandPapers
 '''''''''''''''''
 
-It is possible to export a :class:`~sandpaper.sandpaper.SandPaper` instance using the :func:`~sandpaper.sandpaper.SandPaper.export` function.
-This exports the configuration of the intance to a `json <http://www.json.org>`__ format.
+It is possible to export a :class:`~sandpaper.sandpaper.SandPaper` instance using the :func:`~sandpaper.sandpaper.SandPaper.__json__` function.
+This exports the configuration of the intance to a dictionary which is suitable for `json <http://www.json.org>`__ serialization.
 
 .. code-block:: python
 
-    serialized = my_sandpaper.export()
+    serialized = my_sandpaper.__json__()
 
 
-This exported format can be used to bootstrap a new :class:`~sandpaper.sandpaper.SandPaper` instance by providing the serialization to the :func:`~sandpaper.sandpaper.SandPaper.load` method.
+This exported format can be used to bootstrap a new :class:`~sandpaper.sandpaper.SandPaper` instance by providing the serialization to the :func:`~sandpaper.sandpaper.SandPaper.from_json` method.
 
 .. code-block:: python
 
-    new_sandpaper = SandPaper.load(serialized)
+    new_sandpaper = SandPaper.from_json(serialized)
+
+
+.. important:: The json serialization does not store any information about callables.
+   A ``UserWarning`` is raised during serialization if a callable is found.
 
 
 .. _getting_started-limitations:
