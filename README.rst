@@ -65,5 +65,5 @@ Learn more by reading the `documentation <https://sandpaper.readthedocs.io/en/la
          '%m-%d': '%c'
       }, column_filter=r'date')
 
-   # apply sandpaper rules to all files matching the brace expanded glob given
+   # apply sandpaper rules to a source file and write results to a target file
    paper.apply('/home/you/source.csv', '/home/you/target.csv')
