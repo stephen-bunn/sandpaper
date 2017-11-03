@@ -68,6 +68,7 @@ class SandPaper(object):
     __available_filters = (
         'column_filter', 'value_filter', 'callable_filter',
     )
+    __rule_stats = {}
     __default_apply = {
         'auto_detect_datetime': False,
     }
@@ -290,7 +291,7 @@ class SandPaper(object):
 
     def _apply_rules(
         self, from_file,
-        sheet_name=None,
+        sheet_name=None, monitor_rules=False,
         **kwargs
     ):
         """ Base rule application method.
@@ -308,6 +309,8 @@ class SandPaper(object):
         ):
             # start application of all registered rules
             for (rule, rule_args, rule_kwargs,) in self.rules:
+                if monitor_rules and rule.__name__ not in self.__rule_stats:
+                    self.__rule_stats[rule.__name__] = 0
                 if rule in self.value_rules:
                     # value rules are  required to pass filtering
                     for (column, value,) in self._filter_values(
@@ -318,18 +321,22 @@ class SandPaper(object):
                             self, record.copy(), column,
                             *rule_args, **rule_kwargs
                         )
+                        if monitor_rules:
+                            self.__rule_stats[rule.__name__] += 1
                 else:
                     # handle application of record rule
                     record = rule(
                         self, record.copy(),
                         *rule_args, **rule_kwargs
                     )
+                    if monitor_rules:
+                        self.__rule_stats[rule.__name__] += 1
 
             yield record
 
     def _apply_to(
         self, from_file, to_file,
-        sheet_name=None,
+        sheet_name=None, monitor_rules=False,
         **kwargs
     ):
         """ Threadable rule processing method.
@@ -341,21 +348,28 @@ class SandPaper(object):
         :param str from_file: The input filepath
         :param str to_file: The output filepath
         :param str sheet_name: The name of the sheet to apply rules to
+        :param bool monitor_rules: Boolean flag that inidicates if the count of
+            applied rules should be monitored
         :param dict kwargs: Any named arguments, passed to ``_apply_rules``
-        :returns: The saved normalized filepath
-        :rtype: str
+        :returns: The rule statistics if ``monitor_rules`` is true
+        :rtype: dict[str, int]
         """
 
-        pyexcel.isave_as(
-            records=list(self._apply_rules(
-                from_file,
-                sheet_name=sheet_name,
-                **kwargs
-            )),
-            dest_file_name=to_file,
-            dest_lineterminator=os.linesep,
-        )
-        return to_file
+        try:
+            pyexcel.isave_as(
+                records=self._apply_rules(
+                    from_file,
+                    sheet_name=sheet_name,
+                    monitor_rules=monitor_rules,
+                    **kwargs
+                ),
+                dest_file_name=to_file,
+                dest_lineterminator=os.linesep,
+            )
+            if monitor_rules:
+                return self.__rule_stats
+        finally:
+            self.__rule_stats = {}
 
     @value_rule
     def lower(self, record, column, **kwargs):
@@ -795,7 +809,7 @@ class SandPaper(object):
 
     def apply(
         self, from_file, to_file,
-        sheet_name=None,
+        sheet_name=None, monitor_rules=False,
         **kwargs
     ):
         """ Applies a SandPaper instance rules to a given glob of files.
@@ -804,9 +818,12 @@ class SandPaper(object):
         :param str to_file: The path of the file to write to
         :param str sheet_name: The name of the sheet to apply rules to
             (defaults to the first available sheet)
+        :param bool monitor_rules: Boolean flag that inidicates if the count of
+            applied rules should be monitored
         :param dict kwargs: Any additional named arguments
             (applied to the pyexcel ``iget_records`` method)
-        :returns: Yields output filepaths (not in any consistent order)
+        :returns: The rule statistics if ``monitor_rules`` is true
+        :rtype: dict[str, int]
         """
 
         # precompile filter regexes (kinda speeds up the processing)
@@ -820,6 +837,7 @@ class SandPaper(object):
             return self._apply_to(
                 from_file, to_file,
                 sheet_name=sheet_name,
+                monitor_rules=monitor_rules,
                 **dict(self.__default_apply, **kwargs)
             )
         finally:
