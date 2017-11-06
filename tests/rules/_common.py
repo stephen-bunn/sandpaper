@@ -122,8 +122,5 @@ class BaseRuleTest(six.with_metaclass(abc.ABCMeta, unittest.TestCase)):
 
         for (from_file, to_file, result_file,) in \
                 zip(pre_paths, sanded_paths, post_paths):
-            print((from_file, to_file, result_file,))
             applied = self.paper.apply(from_file, to_file)
-            print(applied)
-            self.assertEqual(applied, to_file)
             self.assertTrue(filecmp.cmp(to_file, result_file))
