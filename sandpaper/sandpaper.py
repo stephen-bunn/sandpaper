@@ -171,6 +171,20 @@ class SandPaper(object):
             return None
         return value
 
+    def __row_filter(self, record, normalized=False):
+        """ Default row filter callable.
+
+        :param collections.OrderedDict record: An ordered dictionary of
+            (``column_name``, ``row_value``) items
+        :param bool normalized: A flag which indicates if the row filter call
+            is being applied *pre* or *post* data normalization.
+            (True indicates post-normalization)
+        :returns: True
+        :rtype: bool
+        """
+
+        return True
+
     @property
     def name(self):
         """ The descriptive name of the SandPaper instance.
@@ -291,52 +305,61 @@ class SandPaper(object):
 
     def _apply_rules(
         self, from_file,
-        sheet_name=None, monitor_rules=False,
+        sheet_name=None, row_filter=None, monitor_rules=False,
         **kwargs
     ):
         """ Base rule application method.
 
         :param str from_file: The file to apply rules to
         :param str sheet_name: The name of the sheet to apply rules to
+        :param callable row_filter: A callable which accepts a cleaned record
+            and returns True if the record should be written out
         :param dict kwargs: Any named arguments, for the reading of the file
         :returns: Yields normalized records
         """
+
+        if not callable(row_filter):
+            row_filter = self.__row_filter
 
         for record in pyexcel.iget_records(
             file_name=from_file,
             sheet_name=sheet_name,
             **kwargs
         ):
-            # start application of all registered rules
-            for (rule, rule_args, rule_kwargs,) in self.rules:
-                if monitor_rules and rule.__name__ not in self.__rule_stats:
-                    self.__rule_stats[rule.__name__] = 0
-                if rule in self.value_rules:
-                    # value rules are  required to pass filtering
-                    for (column, value,) in self._filter_values(
-                        record, **rule_kwargs
-                    ):
-                        # handle application of value rule
-                        record[column] = rule(
-                            self, record.copy(), column,
+            if row_filter(record, normalized=False):
+                # start application of all registered rules
+                for (rule, rule_args, rule_kwargs,) in self.rules:
+                    if monitor_rules and rule.__name__ not in \
+                            self.__rule_stats:
+                        self.__rule_stats[rule.__name__] = 0
+                    if rule in self.value_rules:
+                        # value rules are  required to pass filtering
+                        for (column, value,) in self._filter_values(
+                            record, **rule_kwargs
+                        ):
+                            # handle application of value rule
+                            record[column] = rule(
+                                self, record.copy(), column,
+                                *rule_args, **rule_kwargs
+                            )
+                            if monitor_rules:
+                                self.__rule_stats[rule.__name__] += 1
+                    else:
+                        # handle application of record rule
+                        record = rule(
+                            self, record.copy(),
                             *rule_args, **rule_kwargs
                         )
                         if monitor_rules:
                             self.__rule_stats[rule.__name__] += 1
-                else:
-                    # handle application of record rule
-                    record = rule(
-                        self, record.copy(),
-                        *rule_args, **rule_kwargs
-                    )
-                    if monitor_rules:
-                        self.__rule_stats[rule.__name__] += 1
 
-            yield record
+                # row filtering done post record normalization
+                if row_filter(record, normalized=True):
+                    yield record
 
     def _apply_to(
         self, from_file, to_file,
-        sheet_name=None, monitor_rules=False,
+        sheet_name=None, row_filter=None, monitor_rules=False,
         **kwargs
     ):
         """ Threadable rule processing method.
@@ -348,6 +371,8 @@ class SandPaper(object):
         :param str from_file: The input filepath
         :param str to_file: The output filepath
         :param str sheet_name: The name of the sheet to apply rules to
+        :param callable row_filter: A callable which accepts a cleaned record
+            and returns True if the record should be written out
         :param bool monitor_rules: Boolean flag that inidicates if the count of
             applied rules should be monitored
         :param dict kwargs: Any named arguments, passed to ``_apply_rules``
@@ -359,7 +384,7 @@ class SandPaper(object):
             pyexcel.isave_as(
                 records=self._apply_rules(
                     from_file,
-                    sheet_name=sheet_name,
+                    sheet_name=sheet_name, row_filter=row_filter,
                     monitor_rules=monitor_rules,
                     **kwargs
                 ),
@@ -809,7 +834,7 @@ class SandPaper(object):
 
     def apply(
         self, from_file, to_file,
-        sheet_name=None, monitor_rules=False,
+        sheet_name=None, row_filter=None, monitor_rules=False,
         **kwargs
     ):
         """ Applies a SandPaper instance rules to a given glob of files.
@@ -818,6 +843,8 @@ class SandPaper(object):
         :param str to_file: The path of the file to write to
         :param str sheet_name: The name of the sheet to apply rules to
             (defaults to the first available sheet)
+        :param callable row_filter: A callable which accepts a cleaned record
+            and returns True if the record should be written out
         :param bool monitor_rules: Boolean flag that inidicates if the count of
             applied rules should be monitored
         :param dict kwargs: Any additional named arguments
@@ -836,7 +863,7 @@ class SandPaper(object):
         try:
             return self._apply_to(
                 from_file, to_file,
-                sheet_name=sheet_name,
+                sheet_name=sheet_name, row_filter=row_filter,
                 monitor_rules=monitor_rules,
                 **dict(self.__default_apply, **kwargs)
             )
