@@ -196,6 +196,6 @@ Translating Dates
 '''''''''''''''''
 
 The :func:`~sandpaper.sandpaper.SandPaper.translate_date` rule is quite nifty, but also has a couple limitations that need to be considered.
-We utilize the clever `arrow <https://arrow.readthedocs.io/en/latest/>`_ library to handle date parsing which can be greedy at times.
-
-However, because this parsing can take a considerable amount of time (when executed for many many items) it is recommended to also specify at least a ``column_filter`` for all instances of the rule.
+Because dates are not a base type, the mentioned rule can sometimes incorrectly interpret strings as dates and apply a date translation where it is not needed.
+For this reason, it is recommended to also specify at least a ``column_filter`` for all instances of the rule.
+A ``value_filter`` would also help, but causes a lot of extra complexity that is most likely not required.
