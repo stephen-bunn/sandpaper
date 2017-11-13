@@ -9,6 +9,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 *unreleased*
 ------------
 * added functionality for a ``row_filter`` callable specified during ``apply``
+* fixed ``__json__`` export warnings with callables
 
 
 `0.0.5`_ (*2017-11-03*)
