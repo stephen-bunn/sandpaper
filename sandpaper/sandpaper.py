@@ -82,7 +82,6 @@ class SandPaper(object):
         :param str name: The descriptive name of the SandPaper object
         """
 
-        # TODO: find a way to provide better handling for data offsets
         if name is not None:
             self.name = name
 
@@ -151,22 +150,23 @@ class SandPaper(object):
         if isinstance(value, dict):
             rebuild = {}
             for (k, v,) in value.items():
-                jsonified = self.__jsonify(v)
+                jsonified = self.__jsonify(v, warn=warn)
                 if jsonified is not None:
                     rebuild[k] = v
             return rebuild
         elif isinstance(value, (list, set, tuple,)):
             rebuild = []
             for i in value:
-                jsonified = self.__jsonify(i)
+                jsonified = self.__jsonify(i, warn=warn)
                 if jsonified is not None:
                     rebuild.append(jsonified)
             return rebuild
         elif callable(value):
             if warn:
                 warnings.warn((
-                    "callable '{value.__name__}' in paper instance detected, "
-                    "loading from json will not perform this action"
+                    "callable '{value.__name__}' in instance {self} detected, "
+                    "built instances from generated json will not contain the "
+                    "corresponding action"
                 ).format(**locals()), UserWarning)
             return None
         return value
@@ -662,7 +662,6 @@ class SandPaper(object):
                 named_groups = kwargs.copy()
                 named_groups.update(match.groupdict())
 
-                # TODO: simplify the passing of arguments to this format
                 value = to_format.format(
                     *[
                         (capture if capture is not None else '')
@@ -747,9 +746,6 @@ class SandPaper(object):
         :param dict kwargs: Any named arguments
         :returns: The record with a potential newly added column
         """
-
-        # TODO: add the ability to specify index in the record to add column to
-        # column already exists, completely ignore adding it
 
         for (name, value,) in additions.items():
             if name in record:
