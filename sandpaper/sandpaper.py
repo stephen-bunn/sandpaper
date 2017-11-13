@@ -878,7 +878,11 @@ class SandPaper(object):
         :rtype: SandPaper
         """
 
-        paper = cls(serialization['name'])
+        paper = (
+            cls(serialization['name'])
+            if serialization['name'] != serialization['uid'] else
+            cls()
+        )
         for (
             rule_name, rule_args, rule_kwargs,
         ) in serialization['rules']:
