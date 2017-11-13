@@ -142,6 +142,19 @@ This exported format can be used to bootstrap a new :class:`~sandpaper.sandpaper
 .. important:: The json serialization does not store any information about callables.
    A ``UserWarning`` is raised during serialization if a callable is found.
 
+   .. code-block:: python
+
+      def _filter_handler(record, column, **kwargs):
+         return record[column].lower().startswith('north')
+
+      paper = SandPaper().translate_text({
+         r'FL': 'Florida',
+         r'NC': 'North Carolina'
+      }, callable_filter=_filter_handler)
+
+      paper.__json__()
+      # raises: UserWarning because of _filter_handler
+
 
 .. _getting_started-limitations:
 
