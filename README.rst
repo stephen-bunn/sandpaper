@@ -16,6 +16,10 @@
    :target: https://pypi.org/project/sandpaper/
    :alt: Release Status
 
+.. image:: https://img.shields.io/github/last-commit/stephen-bunn/sandpaper.svg
+   :target: https://github.com/stephen-bunn/sandpaper
+   :alt: Last Commit
+
 .. image:: https://img.shields.io/github/license/stephen-bunn/sandpaper.svg
    :target: https://github.com/stephen-bunn/sandpaper/blob/master/LICENSE
    :alt: License

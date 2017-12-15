@@ -8,7 +8,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 
 *unreleased*
 ------------
-* WIP
+* added "last commit" GitHub badge
 
 
 `0.0.6`_ (*2017-12-15*)
