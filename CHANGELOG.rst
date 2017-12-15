@@ -8,6 +8,11 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 
 *unreleased*
 ------------
+* WIP
+
+
+`0.0.6`_ (*2017-12-15*)
+-----------------------
 * added functionality for a ``row_filter`` callable specified during ``apply``
 * added ``keep_columns`` record rule
 * fixed ``__json__`` export warnings with callables
@@ -60,6 +65,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 * fixed the project's base structure for PY2 compatability
 
 
+.. _0.0.6: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.6
 .. _0.0.5: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.5
 .. _0.0.4: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.4
 .. _0.0.3: https://github.com/stephen-bunn/sandpaper/releases/tag/v0.0.3
