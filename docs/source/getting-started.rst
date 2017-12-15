@@ -100,6 +100,24 @@ In order to run this :class:`~sandpaper.sandpaper.SandPaper` instance you need t
 .. important:: If applying to ``.csv`` files, unnecessary quotations are implicitly removed as part of the reading and saving processes.
    Currently there is no way of disabling this... sorry 😞.
 
+
+Typically when dealing with Excell type files you will run into issues where the data that needs to be normalized isn't on the first row or even the first column.
+In this instance you can specify two options ``start_row`` and ``start_column`` where the reading of the file should start in the :func:`~sandpaper.sandpaper.SandPaper.apply` method.
+
+.. note:: Both ``start_row`` and ``start_column`` are 0 indexed. Therefore, if the data starts in row 2 in Excell you need to specify ``start_row=1`` in the :func:`~sandpaper.sandpaper.SandPaper.apply` method.
+
+By default SandPaper will read data from the first available sheet (only for Excell type files).
+In order to specify the sheet that you want the normalization to run on, specify the keyword argument ``sheet_name`` in the :func:`~sandpaper.sandpaper.SandPaper.apply` method.
+
+.. code-block:: python
+
+   my_sandpaper.apply(
+      '/path/to/input_file.xlsx',
+      '/path/to/output_file.csv',
+      sheet_name='Actual Data Sheet'
+   )
+
+
 .. _getting_started-rule-filters:
 
 Rule Filters
