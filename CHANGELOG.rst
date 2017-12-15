@@ -15,6 +15,7 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 -----------------------
 * added functionality for a ``row_filter`` callable specified during ``apply``
 * added ``keep_columns`` record rule
+* added built-in Sphinx theme (borrowed from pocoo click)
 * fixed ``__json__`` export warnings with callables
 
 
