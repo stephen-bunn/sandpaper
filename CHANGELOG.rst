@@ -9,6 +9,8 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 *unreleased*
 ------------
 * added "last commit" GitHub badge
+* added CONTRIBUTING documentation
+* added GitHub templates for issues and pull requests
 
 
 `0.0.6`_ (*2017-12-15*)

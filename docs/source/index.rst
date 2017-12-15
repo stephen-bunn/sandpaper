@@ -60,6 +60,7 @@ Reference
 .. toctree::
    :maxdepth: 2
 
+   contributing
    sandpaper
 
 
