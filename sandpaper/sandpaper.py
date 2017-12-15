@@ -779,6 +779,29 @@ class SandPaper(object):
         return record
 
     @record_rule
+    def keep_columns(self, record, keeps, **kwargs):
+        """ Removes all other columns from a record.
+
+        :param collections.OrderedDict record: A record whose value within
+            ``column`` should be normalized and returned
+        :param keeps: A list of columns to keep
+        :type keeps: list[str]
+        :param dict kwargs: Any named arguments
+        :returns: The record with a potential newly kept column
+        """
+
+        try:
+            new_record = record.copy()
+            for column_name in record:
+                if column_name not in keeps:
+                    del new_record[column_name]
+
+            return new_record
+        finally:
+            # memory removal of unused record (shouldn't cause issues)
+            del record
+
+    @record_rule
     def rename_columns(
         self, record, renames,
         **kwargs
