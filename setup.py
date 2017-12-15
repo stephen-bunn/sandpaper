@@ -74,9 +74,11 @@ setuptools.setup(
     install_requires=REQUIRES,
     packages=setuptools.find_packages(),
     keywords=[
-        'normalization',
+        'normalize',
         'csv',
         'excel',
+        'table',
+        'clean',
     ],
     python_requires='>=2.7',
     classifiers=[
@@ -87,7 +89,6 @@ setuptools.setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: Implementation :: CPython',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
