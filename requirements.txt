@@ -4,6 +4,3 @@ pyexcel
 pyexcel-io
 pyexcel-xls
 pyexcel-xlsx
-
-# NOTE: required for readthedocs.io
-flask-sphinx-themes

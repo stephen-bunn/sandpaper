@@ -50,11 +50,13 @@ Documentation
    changelog
 
 
-.. toctree::
-   :maxdepth: 3
-   :caption: Module Reference:
+Reference
+=========
 
-   modules
+.. toctree::
+   :maxdepth: 2
+
+   sandpaper
 
 
 Indices

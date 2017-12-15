@@ -20,8 +20,11 @@
 import os
 import sys
 
-import flask_sphinx_themes
+sys.path.insert(0, os.path.join(os.path.abspath('.'), 'themes'))
+sys.path.insert(0, os.path.abspath('.'))
 
+
+from themes import (pocoo_theme_support,)
 
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -46,6 +49,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'clickdoctools',
 ]
 
 autodoc_member_order = 'bysource'
@@ -89,7 +93,7 @@ language = None
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'flask_sphinx_themes.pygments.FlaskyStyle'
+pygments_style = 'pocoo_theme_support.PocooStyle'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -100,18 +104,18 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme_path = [flask_sphinx_themes.get_path()]
-html_theme = 'flask'
+html_theme = 'click'
+html_theme_path = ['themes']
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {
-    'github_fork': 'stephen-bunn/sandpaper',
-    'index_logo': 'logo.png',
-    'index_logo_height': '200px'
-}
+# html_theme_options = {
+#     'github_fork': 'stephen-bunn/sandpaper',
+#     'index_logo': 'logo.png',
+#     'index_logo_height': '200px'
+# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

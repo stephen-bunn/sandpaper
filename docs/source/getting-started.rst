@@ -84,7 +84,11 @@ The current state of the ``my_sandpaper`` instance could have also been initiali
          r'NC': 'North Carolina'
       }, column_filter=r'state')
 
----
+
+.. _getting_started-applying-sandpaper:
+
+Applying SandPaper
+''''''''''''''''''
 
 In order to run this :class:`~sandpaper.sandpaper.SandPaper` instance you need to call the :func:`~sandpaper.sandpaper.SandPaper.apply` method to a file.
 

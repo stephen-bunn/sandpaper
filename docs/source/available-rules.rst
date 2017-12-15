@@ -245,6 +245,39 @@ id value
 == =====
 
 
+:func:`~sandpaper.sandpaper.SandPaper.keep_columns`
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
+Removes all other columns for every record.
+
+.. code-block:: python
+
+   SandPaper().keep_columns([
+      'id',
+      'name'
+   ])
+
+
+== ===== =====
+Before
+--------------
+id name  value
+== ===== =====
+1  hello world
+2  test  table
+== ===== =====
+
+|
+
+== =====
+After
+--------
+id name
+== =====
+1  hello
+2  test
+== =====
+
+
 :func:`~sandpaper.sandpaper.SandPaper.rename_columns`
 '''''''''''''''''''''''''''''''''''''''''''''''''''''
 Renames a column for every record.
