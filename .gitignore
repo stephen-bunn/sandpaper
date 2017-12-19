@@ -101,5 +101,6 @@ ENV/
 .mypy_cache/
 
 # sandpaper settings
+.vscode
 main.py
 *.sanded.*
