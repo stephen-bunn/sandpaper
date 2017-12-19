@@ -318,6 +318,8 @@ class SandPaper(object):
         :returns: Yields normalized records
         """
 
+        # TODO: find a better way of allow the user to keep specific rows
+        # instead of using a callable which cannot be serialized to json
         if not callable(row_filter):
             row_filter = self.__row_filter
 
