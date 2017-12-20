@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
 # SandPaper documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 19 17:09:34 2017.
 #
