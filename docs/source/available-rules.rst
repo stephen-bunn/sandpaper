@@ -318,8 +318,8 @@ Reorders columns from every record.
 
    SandPaper().order_columns([
       'value',
-      'name',
-      'id'
+      'id',
+      'name'
    ])
 
 
